@@ -1,0 +1,59 @@
+<mxfile host="65bd71144e">
+    <diagram id="4IocFyRNs4yEuKWUfdgg" name="BusStructure">
+        <mxGraphModel dx="839" dy="495" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="2" value="Bus Structure" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=25;" vertex="1" parent="1">
+                    <mxGeometry x="367.5" y="30" width="200" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" style="edgeStyle=none;html=1;entryX=0;entryY=0.25;entryDx=0;entryDy=0;fontSize=15;exitX=1;exitY=0.25;exitDx=0;exitDy=0;dashed=1;" edge="1" parent="1" source="3" target="5">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="BusHub" style="rounded=0;whiteSpace=wrap;html=1;fontSize=15;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="215" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="" style="swimlane;startSize=0;fontSize=25;" vertex="1" parent="1">
+                    <mxGeometry x="225" y="70" width="485" height="350" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" style="edgeStyle=none;html=1;entryX=-0.008;entryY=0.357;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=15;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="4" source="5" target="7">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="163.75" y="205" as="sourcePoint"/>
+                        <mxPoint x="315" y="212.5" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="245" y="175"/>
+                            <mxPoint x="245" y="220"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="5" value="Receiver" style="rounded=1;whiteSpace=wrap;html=1;fontSize=15;" vertex="1" parent="4">
+                    <mxGeometry x="55" y="145" width="145" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="start" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=15;" edge="1" parent="4" source="6" target="5">
+                    <mxGeometry x="-0.2401" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="128" y="80"/>
+                        </Array>
+                        <mxPoint x="1" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="6" value="Main" style="rounded=0;whiteSpace=wrap;html=1;fontSize=15;" vertex="1" parent="4">
+                    <mxGeometry x="227.5" y="50" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=15;" edge="1" parent="4" source="7" target="5">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="128" y="240"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="7" value="NGTaskQueue" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fontSize=15;" vertex="1" parent="4">
+                    <mxGeometry x="315" y="170" width="132.5" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" style="edgeStyle=none;html=1;entryX=1;entryY=0.75;entryDx=0;entryDy=0;fontSize=15;exitX=0;exitY=0.75;exitDx=0;exitDy=0;dashed=1;" edge="1" parent="1" source="5" target="3">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
