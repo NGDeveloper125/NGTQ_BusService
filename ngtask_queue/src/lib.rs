@@ -41,6 +41,38 @@ impl TaskQueue {
             }
         }
     }
+
+    pub fn push_category_task_to_queue(&mut self, task: CategoryTask) -> (usize, usize) {
+        if task.category == String::new() || task.payload == String::new() {
+            return (0,0)
+        } 
+        match self.category_queues.get_mut(&task.category) {
+            Some(queue) => {
+                let queue_size = handle_new_category_task(queue, task);
+                (self.category_queues.len(), queue_size)
+            },
+            None => {
+                let mut new_queue = Vec::new();
+                new_queue.push(task.payload);
+                self.category_queues.insert(task.category.to_string(), Mutex::new(new_queue));
+                return (self.category_queues.len(), 1);
+            }
+        }
+    }
+}
+
+
+fn handle_new_category_task(queue: &mut Mutex<Vec<String>>, task: CategoryTask) -> usize {
+    match queue.lock() {
+        Ok(mut opened_queue) => {
+            opened_queue.push(task.payload);
+            opened_queue.len()
+        },
+        Err(error) => {
+            println!("Failed to open queue: {:?}", error);
+            return 0
+        }
+    }
 }
 
 #[cfg(test)]
@@ -128,6 +160,107 @@ mod tests {
                 let i = task_queue.push_id_task_to_queue(id_task);
                 assert_eq!(i, 0);
                 assert_eq!(task_queue.id_queue.len(), 0)
+            },
+            Err(error) => {
+                println!("Failed to open queue: {:?}", error);
+                assert!(false)
+            }
+        };
+    }
+
+    #[test]
+    fn valid_new_message_test_push_new_category_task_to_queue() {
+        let task_queue_arc = TaskQueue::initialise();
+        let task = CategoryTask {
+            category: String::from("test"),
+            payload: String::from("Do this and that")
+        };
+
+        match task_queue_arc.lock() {
+            Ok(mut task_queue) => {
+                let (number_of_queue, queue_len) = task_queue.push_category_task_to_queue(task);
+                assert_eq!(number_of_queue, 1);
+                assert_eq!(queue_len, 1);
+            },
+            Err(error) => {
+                println!("Failed to open queue: {:?}", error);
+                assert!(false)
+            }
+        };
+    }
+
+    #[test]
+    fn valid_new_message_test_push_existing_category_task_to_queue() {
+        let task_queue_arc = TaskQueue::initialise();
+        let task = CategoryTask {
+            category: String::from("test"),
+            payload: String::from("Do this and that")
+        };
+
+        match task_queue_arc.lock() {
+            Ok(mut task_queue) => {
+                let (number_of_queue, queue_len) = task_queue.push_category_task_to_queue(task);
+                assert_eq!(number_of_queue, 1);
+                assert_eq!(queue_len, 1);
+            },
+            Err(error) => {
+                println!("Failed to open queue: {:?}", error);
+                assert!(false)
+            }
+        };
+
+        let task = CategoryTask {
+            category: String::from("test"),
+            payload: String::from("Do this and that")
+        };
+
+        match task_queue_arc.lock() {
+            Ok(mut task_queue) => {
+                let (number_of_queue, queue_len) = task_queue.push_category_task_to_queue(task);
+                assert_eq!(number_of_queue, 1);
+                assert_eq!(queue_len, 2);
+            },
+            Err(error) => {
+                println!("Failed to open queue: {:?}", error);
+                assert!(false)
+            }
+        };
+    }
+
+    #[test]
+    fn invalid_category_new_message_test_push_category_task_to_queue() {
+        let task_queue_arc = TaskQueue::initialise();
+        let task = CategoryTask {
+            category: String::new(),
+            payload: String::from("Do this and that")
+        };
+
+        match task_queue_arc.lock() {
+            Ok(mut task_queue) => {
+                let (number_of_queue, queue_len) = task_queue.push_category_task_to_queue(task);
+                assert_eq!(number_of_queue, 0);
+                assert_eq!(queue_len, 0);
+            },
+            Err(error) => {
+                println!("Failed to open queue: {:?}", error);
+                assert!(false)
+            }
+        };
+    }
+
+    #[test]
+    fn invalid_payload_new_message_test_push_category_task_to_queue() {
+        let task_queue_arc = TaskQueue::initialise();
+        let task = CategoryTask {
+            category: String::from("test"),
+            payload: String::new()
+        };
+
+        match task_queue_arc.lock() {
+            Ok(mut task_queue) => {
+                let (number_of_queue, queue_len) = task_queue.push_category_task_to_queue(task);
+                assert_eq!(number_of_queue, 0);
+                assert_eq!(queue_len, 0);
             },
             Err(error) => {
                 println!("Failed to open queue: {:?}", error);
