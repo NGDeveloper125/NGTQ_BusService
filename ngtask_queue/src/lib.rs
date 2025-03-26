@@ -48,7 +48,7 @@ impl TaskQueue {
         } 
         match self.category_queues.get_mut(&task.category) {
             Some(queue) => {
-                let queue_size = handle_new_category_task(queue, task);
+                let queue_size = push_category_task(queue, task);
                 (self.category_queues.len(), queue_size)
             },
             None => {
@@ -62,7 +62,7 @@ impl TaskQueue {
 }
 
 
-fn handle_new_category_task(queue: &mut Mutex<Vec<String>>, task: CategoryTask) -> usize {
+fn push_category_task(queue: &mut Mutex<Vec<String>>, task: CategoryTask) -> usize {
     match queue.lock() {
         Ok(mut opened_queue) => {
             opened_queue.push(task.payload);
