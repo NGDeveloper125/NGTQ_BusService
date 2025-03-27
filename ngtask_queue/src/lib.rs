@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 pub struct TaskQueue {
     is_initialised: bool,
     id_queue: HashMap<String, String>,
-    category_queues: HashMap<String, Mutex<Vec<String>>>,
+    category_queues: HashMap<String, Vec<String>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -26,7 +26,7 @@ impl TaskQueue {
     pub fn initialise() -> Arc<Mutex<TaskQueue>> {
         let is_initialised = true;
         let id_queue: HashMap<String, String> = HashMap::new();
-        let category_queues: HashMap<String, Mutex<Vec<String>>> = HashMap::new();
+        let category_queues: HashMap<String, Vec<String>> = HashMap::new();
 
         Arc::new(Mutex::new(TaskQueue { is_initialised, id_queue, category_queues }))
     }
@@ -54,7 +54,7 @@ impl TaskQueue {
             None => {
                 let mut new_queue = Vec::new();
                 new_queue.push(task.payload);
-                self.category_queues.insert(task.category.to_string(), Mutex::new(new_queue));
+                self.category_queues.insert(task.category.to_string(), new_queue);
                 return (self.category_queues.len(), 1);
             }
         }
@@ -66,17 +66,9 @@ impl TaskQueue {
 }
 
 
-fn push_category_task_to_existing_queue(queue: &mut Mutex<Vec<String>>, task: CategoryTask) -> usize {
-    match queue.lock() {
-        Ok(mut opened_queue) => {
-            opened_queue.push(task.payload);
-            opened_queue.len()
-        },
-        Err(error) => {
-            println!("Failed to open queue: {:?}", error);
-            return 0
-        }
-    }
+fn push_category_task_to_existing_queue(queue: &mut Vec<String>, task: CategoryTask) -> usize {
+    queue.push(task.payload);
+    queue.len()
 }
 
 #[cfg(test)]
