@@ -5,21 +5,21 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug)]
 pub struct TaskQueue {
-    is_initialised: bool,
-    id_queue: HashMap<String, String>,
-    category_queues: HashMap<String, Vec<String>>,
+    pub is_initialised: bool,
+    pub id_queue: HashMap<String, String>,
+    pub category_queues: HashMap<String, Vec<String>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct IdTask {
-    id: String,
-    payload: String,
+    pub id: String,
+    pub payload: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CategoryTask {
-    category: String,
-    payload: String,
+    pub category: String,
+    pub payload: String,
 }
 
 impl TaskQueue {
@@ -83,244 +83,5 @@ mod tests {
             Err(_) => false
         };
         assert_eq!(result, true)
-    }
-
-    #[test]
-    fn valid_new_message_test_push_id_task_to_queue() {
-        let task_queue_arc = TaskQueue::initialise();
-        let id_task = IdTask {
-            id: String::from("1"),
-            payload: String::from("Do this and that")
-        };
-
-        match task_queue_arc.lock() {
-            Ok(mut task_queue) => {
-                let i = task_queue.push_id_task(id_task);
-                assert_eq!(i, 1);
-                assert_eq!(task_queue.id_queue.len(), 1)
-            },
-            Err(error) => {
-                println!("Failed to open queue: {:?}", error);
-                assert!(false)
-            }
-        };
-    }
-
-    #[test]
-    fn valid_existing_id_message_test_push_id_task_to_queue() {
-        let task_queue_arc = TaskQueue::initialise();
-        let id_task1: IdTask = IdTask {
-            id: String::from("1"),
-            payload: String::from("Do this and that")
-        };
-
-        match task_queue_arc.lock() {
-            Ok(mut task_queue) => {
-                let i = task_queue.push_id_task(id_task1);
-                assert_eq!(i, 1);
-                assert_eq!(task_queue.id_queue.len(), 1)
-            },
-            Err(error) => {
-                println!("Failed to open queue: {:?}", error);
-                assert!(false)
-            }
-        };
-
-        let id_task2: IdTask = IdTask {
-            id: String::from("1"),
-            payload: String::from("Do this and that")
-        };
-        match task_queue_arc.lock() {
-            Ok(mut task_queue) => {
-                let i = task_queue.push_id_task(id_task2);
-                assert_eq!(i, 0);
-                assert_eq!(task_queue.id_queue.len(), 1)
-            },
-            Err(error) => {
-                println!("Failed to open queue: {:?}", error);
-                assert!(false)
-            }
-        };
-    }
-
-    #[test]
-    fn invalid_new_message_test_push_id_task_to_queue() {
-        let task_queue_arc = TaskQueue::initialise();
-        let id_task = IdTask {
-            id: String::new(),
-            payload: String::from("Do this and that")
-        };
-
-        match task_queue_arc.lock() {
-            Ok(mut task_queue) => {
-                let i = task_queue.push_id_task(id_task);
-                assert_eq!(i, 0);
-                assert_eq!(task_queue.id_queue.len(), 0)
-            },
-            Err(error) => {
-                println!("Failed to open queue: {:?}", error);
-                assert!(false)
-            }
-        };
-    }
-
-    #[test]
-    fn valid_new_message_test_push_new_category_task_to_queue() {
-        let task_queue_arc = TaskQueue::initialise();
-        let task = CategoryTask {
-            category: String::from("test"),
-            payload: String::from("Do this and that")
-        };
-
-        match task_queue_arc.lock() {
-            Ok(mut task_queue) => {
-                let (number_of_queue, queue_len) = task_queue.push_category_task(task);
-                assert_eq!(number_of_queue, 1);
-                assert_eq!(queue_len, 1);
-            },
-            Err(error) => {
-                println!("Failed to open queue: {:?}", error);
-                assert!(false)
-            }
-        };
-    }
-
-    #[test]
-    fn valid_new_message_test_push_existing_category_task_to_queue() {
-        let task_queue_arc = TaskQueue::initialise();
-        let task = CategoryTask {
-            category: String::from("test"),
-            payload: String::from("Do this and that")
-        };
-
-        match task_queue_arc.lock() {
-            Ok(mut task_queue) => {
-                let (number_of_queue, queue_len) = task_queue.push_category_task(task);
-                assert_eq!(number_of_queue, 1);
-                assert_eq!(queue_len, 1);
-            },
-            Err(error) => {
-                println!("Failed to open queue: {:?}", error);
-                assert!(false)
-            }
-        };
-
-        let task = CategoryTask {
-            category: String::from("test"),
-            payload: String::from("Do this and that")
-        };
-
-        match task_queue_arc.lock() {
-            Ok(mut task_queue) => {
-                let (number_of_queue, queue_len) = task_queue.push_category_task(task);
-                assert_eq!(number_of_queue, 1);
-                assert_eq!(queue_len, 2);
-            },
-            Err(error) => {
-                println!("Failed to open queue: {:?}", error);
-                assert!(false)
-            }
-        };
-    }
-
-    #[test]
-    fn invalid_category_new_message_test_push_category_task_to_queue() {
-        let task_queue_arc = TaskQueue::initialise();
-        let task = CategoryTask {
-            category: String::new(),
-            payload: String::from("Do this and that")
-        };
-
-        match task_queue_arc.lock() {
-            Ok(mut task_queue) => {
-                let (number_of_queue, queue_len) = task_queue.push_category_task(task);
-                assert_eq!(number_of_queue, 0);
-                assert_eq!(queue_len, 0);
-            },
-            Err(error) => {
-                println!("Failed to open queue: {:?}", error);
-                assert!(false)
-            }
-        };
-    }
-
-    #[test]
-    fn invalid_payload_new_message_test_push_category_task_to_queue() {
-        let task_queue_arc = TaskQueue::initialise();
-        let task = CategoryTask {
-            category: String::from("test"),
-            payload: String::new()
-        };
-
-        match task_queue_arc.lock() {
-            Ok(mut task_queue) => {
-                let (number_of_queue, queue_len) = task_queue.push_category_task(task);
-                assert_eq!(number_of_queue, 0);
-                assert_eq!(queue_len, 0);
-            },
-            Err(error) => {
-                println!("Failed to open queue: {:?}", error);
-                assert!(false)
-            }
-        };
-    }
-
-    #[test]
-    fn id_not_in_queue_test_pull_id_task_from_queue() {
-        let task_queue_arc = TaskQueue::initialise();
-        
-        match task_queue_arc.lock() {
-            Ok(mut task_queue) => {
-                let queue_response = task_queue.pull_id_task(String::from("test"));
-                assert_eq!(queue_response, None)
-            },
-            Err(error) => {
-                println!("Failed to open queue {:?}", error);
-                assert!(false)
-            }
-        };
-    }
-
-    #[test]
-    fn id_not_valid_test_pull_id_task_from_queue() {
-        let task_queue_arc = TaskQueue::initialise();
-        
-        match task_queue_arc.lock() {
-            Ok(mut task_queue) => {
-                let queue_response = task_queue.pull_id_task(String::new());
-                assert_eq!(queue_response, None)
-            },
-            Err(error) => {
-                println!("Failed to open queue {:?}", error);
-                assert!(false)
-            }
-        };
-    }
-
-    #[test]
-    fn id_valid_and_exist_test_pull_id_task_from_queue() {
-        let task_queue_arc = TaskQueue::initialise();
-        let payload = String::from("Do something"); 
-        let task = IdTask {
-            id: String::from("test"),
-            payload: payload.clone()
-        };
-
-        match task_queue_arc.lock() {
-            Ok(mut task_queue) => {
-                task_queue.push_id_task(task);
-                match task_queue.pull_id_task(String::from("test")) {
-                    Some(payloud) => {
-                        assert_eq!(payloud, payload);
-                        assert_eq!(task_queue.id_queue.len(), 0)
-                    },
-                    None => assert!(false)
-                }
-            },
-            Err(error) => {
-                println!("Failed to open queue {:?}", error);
-                assert!(false)
-            }
-        };
     }
 }
