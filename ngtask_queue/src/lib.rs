@@ -63,6 +63,21 @@ impl TaskQueue {
     pub fn pull_id_task(&mut self, id: String) -> Option<String> {
         self.id_queue.remove(&id)
     }
+
+    pub fn pull_category_task(&mut self, category: String) -> Option<String> {
+        match self.category_queues.remove(&category) {
+            Some(mut queue) => {
+                if queue.len() > 1 {
+                    let payload = queue.remove(0);
+                    self.category_queues.insert(category.to_string(), queue);
+                    Some(payload)
+                } else {
+                    Some(queue.remove(0))
+                }
+            },
+            None => None
+        }
+    }
 }
 
 
