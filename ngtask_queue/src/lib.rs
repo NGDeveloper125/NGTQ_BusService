@@ -6,8 +6,8 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug)]
 pub struct TaskQueue {
     pub is_initialised: bool,
-    pub id_queue: HashMap<String, String>,
-    pub category_queues: HashMap<String, Vec<String>>,
+    id_queue: HashMap<String, String>,
+    category_queues: HashMap<String, Vec<String>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -29,6 +29,23 @@ impl TaskQueue {
         let category_queues: HashMap<String, Vec<String>> = HashMap::new();
 
         Arc::new(Mutex::new(TaskQueue { is_initialised, id_queue, category_queues }))
+    }
+
+    pub fn get_id_queue_len(&self) -> Option<usize> {
+        if self.is_initialised {
+            return Some(self.id_queue.len())
+        }
+        None
+    }
+
+    pub fn get_category_queue_len(&self, category: &str) -> Option<usize> {
+        if self.is_initialised {
+            match self.category_queues.get(category) {
+                Some(queue) => return  Some(queue.len()),
+                None => return Some(0)
+            }
+        }
+        None
     }
 
     pub fn push_id_task(&mut self, task: IdTask) -> usize {
@@ -98,5 +115,49 @@ mod tests {
             Err(_) => false
         };
         assert_eq!(result, true)
+    }
+
+    #[test]
+    fn id_queue_len() {
+        let task_queue_arc = TaskQueue::initialise();
+        let task = IdTask {
+            id: String::from("test"),
+            payload: String::from("Do Somthing")
+        };
+
+        match task_queue_arc.lock() {
+            Ok(mut task_queue) => {
+                assert_eq!(task_queue.get_id_queue_len().unwrap(), 0);
+                task_queue.push_id_task(task);
+                assert_eq!(task_queue.get_id_queue_len().unwrap(), 1);
+            },
+            Err(error) => {
+                println!("Failed to open queue: {}", error);
+                assert!(false)
+            }
+        };
+    }
+
+
+    #[test]
+    fn category_queue_len() {
+        let task_queue_arc = TaskQueue::initialise();
+        let category = String::from("test");
+        let task = CategoryTask {
+            category: category.to_string(),
+            payload: String::from("Do Somthing")
+        };
+
+        match task_queue_arc.lock() {
+            Ok(mut task_queue) => {
+                assert_eq!(task_queue.get_category_queue_len(&category).unwrap(), 0);
+                task_queue.push_category_task(task);
+                assert_eq!(task_queue.get_category_queue_len(&category).unwrap(), 1);
+            },
+            Err(error) => {
+                println!("Failed to open queue: {}", error);
+                assert!(false)
+            }
+        };
     }
 }
