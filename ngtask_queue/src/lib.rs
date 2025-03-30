@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::{Arc, Mutex}};
 
-use serde::{Deserialize, Serialize};
+use serde::{de::value::Error, Deserialize, Serialize};
 
 
 #[derive(Debug)]
@@ -46,6 +46,10 @@ impl TaskQueue {
             }
         }
         None
+    }
+
+    pub fn get_category_queue(&self, category: &str) -> Option<&Vec<String>> {
+        self.category_queues.get(category)
     }
 
     pub fn push_id_task(&mut self, task: IdTask) -> usize {

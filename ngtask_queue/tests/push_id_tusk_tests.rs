@@ -13,7 +13,7 @@ fn valid_new_message_test_push_id_task_to_queue() {
         Ok(mut task_queue) => {
             let i = task_queue.push_id_task(id_task);
             assert_eq!(i, 1);
-            assert_eq!(task_queue.id_queue.len(), 1)
+            assert_eq!(task_queue.get_id_queue_len().unwrap(), 1)
         },
         Err(error) => {
             println!("Failed to open queue: {:?}", error);
@@ -34,7 +34,7 @@ fn valid_existing_id_message_test_push_id_task_to_queue() {
         Ok(mut task_queue) => {
             let i = task_queue.push_id_task(id_task1);
             assert_eq!(i, 1);
-            assert_eq!(task_queue.id_queue.len(), 1)
+            assert_eq!(task_queue.get_id_queue_len().unwrap(), 1)
         },
         Err(error) => {
             println!("Failed to open queue: {:?}", error);
@@ -50,7 +50,7 @@ fn valid_existing_id_message_test_push_id_task_to_queue() {
         Ok(mut task_queue) => {
             let i = task_queue.push_id_task(id_task2);
             assert_eq!(i, 0);
-            assert_eq!(task_queue.id_queue.len(), 1)
+            assert_eq!(task_queue.get_id_queue_len().unwrap(), 1)
         },
         Err(error) => {
             println!("Failed to open queue: {:?}", error);
@@ -71,7 +71,7 @@ fn invalid_new_message_test_push_id_task_to_queue() {
         Ok(mut task_queue) => {
             let i = task_queue.push_id_task(id_task);
             assert_eq!(i, 0);
-            assert_eq!(task_queue.id_queue.len(), 0)
+            assert_eq!(task_queue.get_id_queue_len().unwrap(), 0)
         },
         Err(error) => {
             println!("Failed to open queue: {:?}", error);
