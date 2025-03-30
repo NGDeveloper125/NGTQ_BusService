@@ -47,7 +47,7 @@ fn id_valid_and_exist_test_pull_id_task_from_queue() {
             match task_queue.pull_id_task(String::from("test")) {
                 Some(payloud) => {
                     assert_eq!(payloud, payload);
-                    assert_eq!(task_queue.id_queue.len(), 0)
+                    assert_eq!(task_queue.get_id_queue_len().unwrap(), 0)
                 },
                 None => assert!(false)
             }

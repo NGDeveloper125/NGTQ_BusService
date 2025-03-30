@@ -47,13 +47,7 @@ fn queue_for_the_category_exist_test_pull_category_task() {
                 }
             }
 
-            match task_queue.category_queues.get("test") {
-                Some(queue) => assert_eq!(queue.len(), 1),
-                None => {
-                    println!("category queue was empty");
-                    assert!(false)
-                } 
-            }
+            assert_eq!(task_queue.get_category_queue_len("test").unwrap(), 1)
         },
         Err(error) => {
             println!("Failed to open queue: {:?}", error);
@@ -79,7 +73,7 @@ fn queue_for_the_category_exist_with_last_task_test_pull_category_task() {
             match queue.pull_category_task(String::from("test")) {
                 Some(payload) => {
                     assert_eq!(payload, task_payload);
-                    match queue.category_queues.get("test") {
+                    match queue.get_category_queue("test") {
                         Some(_) => {
                             println!("Queue exists while should be empty");
                             assert!(false)
