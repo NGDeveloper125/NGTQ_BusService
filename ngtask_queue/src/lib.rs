@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::{Arc, Mutex}};
 
-use serde::{de::value::Error, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 
 #[derive(Debug)]
@@ -32,45 +32,57 @@ impl TaskQueue {
     }
 
     pub fn get_id_queue_len(&self) -> Option<usize> {
-        if self.is_initialised {
-            return Some(self.id_queue.len())
+        if !self.is_initialised {
+            return None
         }
-        None
+        Some(self.id_queue.len())
     }
 
     pub fn get_category_queue_len(&self, category: &str) -> Option<usize> {
-        if self.is_initialised {
-            match self.category_queues.get(category) {
-                Some(queue) => return  Some(queue.len()),
-                None => return Some(0)
-            }
+        if !self.is_initialised {
+            return None
         }
-        None
+        match self.category_queues.get(category) {
+            Some(queue) => return  Some(queue.len()),
+            None => return Some(0)
+        }
     }
 
     pub fn get_category_queue(&self, category: &str) -> Option<&Vec<String>> {
+        if !self.is_initialised {
+            return None
+        }
         self.category_queues.get(category)
     }
 
     pub fn push_id_task(&mut self, task: IdTask) -> usize {
+        if !self.is_initialised {
+            return 0
+        }
+
         if task.id == String::new() || task.payload == String::new() || self.id_queue.contains_key(&task.id) {
-            0
+            return 0
         } else {
-            match self.id_queue.insert(task.id, task.payload) {
+            return match self.id_queue.insert(task.id, task.payload) {
                 Some(_) => 0, // should never happen - handle as an error
                 None => self.id_queue.len()
             }
         }
     }
+    
 
     pub fn push_category_task(&mut self, task: CategoryTask) -> (usize, usize) {
+        if !self.is_initialised {
+            return (0,0)
+        }
+
         if task.category == String::new() || task.payload == String::new() {
             return (0,0)
         } 
         match self.category_queues.get_mut(&task.category) {
             Some(queue) => {
                 let queue_size = push_category_task_to_existing_queue(queue, task);
-                (self.category_queues.len(), queue_size)
+                return (self.category_queues.len(), queue_size)
             },
             None => {
                 let mut new_queue = Vec::new();
@@ -82,10 +94,16 @@ impl TaskQueue {
     }
 
     pub fn pull_id_task(&mut self, id: String) -> Option<String> {
+        if !self.is_initialised {
+            return None
+        }
         self.id_queue.remove(&id)
     }
 
     pub fn pull_category_task(&mut self, category: String) -> Option<String> {
+        if !self.is_initialised {
+            return None
+        }
         match self.category_queues.remove(&category) {
             Some(mut queue) => {
                 if queue.len() > 1 {
