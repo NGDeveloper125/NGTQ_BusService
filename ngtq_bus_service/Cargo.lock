@@ -27,6 +27,8 @@ name = "ngtq_bus_service"
 version = "0.1.0"
 dependencies = [
  "ngtask_queue",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
