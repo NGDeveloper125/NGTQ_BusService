@@ -1,5 +1,5 @@
 
-use std::{os::unix::net::{UnixListener, UnixStream}, sync::mpsc::Sender, thread};
+use std::{os::unix::net::{UnixListener, UnixStream}, sync::{mpsc::Sender, Arc, Mutex}, thread};
 
 use ngtask_queue::{CategoryTask, IdTask, TaskQueue};
 use serde::{Deserialize, Serialize};
@@ -56,4 +56,14 @@ fn start_receiving(socket_path: String, tx: Sender<UnixStream>) {
             Err(error) => println!("Failed to bind receiver: {}", error)
         }
     });
+}
+
+fn handle_id_task_push_request(task: IdTask, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> String {
+    match wrapped_task_queue.lock() {
+        Ok(mut task_queue) => task_queue.push_id_task(task).to_string(),
+        Err(error) => {
+            println!("Failed to push id task: {}", error);
+            error.to_string() 
+        }
+    }
 }
