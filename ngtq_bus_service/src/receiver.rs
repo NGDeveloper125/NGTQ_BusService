@@ -25,6 +25,12 @@ enum Task {
     Error(String)
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct BusResponse {
+    pub successful: bool,
+    pub error: String
+}
+
 pub struct Receiver {
 
 }
@@ -58,12 +64,17 @@ fn start_receiving(socket_path: String, tx: Sender<UnixStream>) {
     });
 }
 
-fn handle_id_task_push_request(task: IdTask, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> String {
+fn handle_id_task_push_request(task: IdTask, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
     match wrapped_task_queue.lock() {
-        Ok(mut task_queue) => task_queue.push_id_task(task).to_string(),
+        Ok(mut task_queue) => {
+            match task_queue.push_id_task(task) {
+                Ok(_) => BusResponse { successful: true, error: String::new() },
+                Err(error) => BusResponse { successful: false, error: error }
+            }
+        },
         Err(error) => {
             println!("Failed to push id task: {}", error);
-            error.to_string() 
+            return BusResponse { successful: false, error: error.to_string() } 
         }
     }
 }

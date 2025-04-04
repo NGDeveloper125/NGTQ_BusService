@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::{Arc, Mutex}};
+use std::{collections::HashMap, error::Error, sync::{Arc, Mutex}};
 
 use serde::{Deserialize, Serialize};
 
@@ -55,17 +55,19 @@ impl TaskQueue {
         self.category_queues.get(category)
     }
 
-    pub fn push_id_task(&mut self, task: IdTask) -> usize {
+    pub fn push_id_task(&mut self, task: IdTask) -> Result<usize, String> {
         if !self.is_initialised {
-            return 0
+            return Err(String::from("Failed to push new task - The TaskQueue was not initialised"))
         }
 
-        if task.id == String::new() || task.payload == String::new() || self.id_queue.contains_key(&task.id) {
-            return 0
+        if task.id == String::new() || task.payload == String::new() {
+            return Err(String::from("Failed to push new task - The task id or payload is empty"))
+        } else if self.id_queue.contains_key(&task.id) {
+            return Err(String::from("Failed to push new task - A task with this id already exist in the queue"))    
         } else {
             return match self.id_queue.insert(task.id, task.payload) {
-                Some(_) => 0, // should never happen - handle as an error
-                None => self.id_queue.len()
+                Some(_) => return Err(String::from("Fatal Error - A task with this id was in the queuea")), 
+                None => Ok(self.id_queue.len())
             }
         }
     }
