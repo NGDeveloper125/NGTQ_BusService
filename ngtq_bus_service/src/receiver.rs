@@ -64,6 +64,14 @@ fn start_receiving(socket_path: String, tx: Sender<UnixStream>) {
     });
 }
 
+fn hundle_push_request(task: Task, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
+    match task {
+        Task::Id(id_task) => handle_id_task_push_request(id_task, wrapped_task_queue),
+        Task::Category(category_task) => handle_category_task_push_request(category_task, wrapped_task_queue),
+        Task::Error(error) => BusResponse { successful: false, error: error }
+    }
+}
+
 fn handle_id_task_push_request(task: IdTask, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
     match wrapped_task_queue.lock() {
         Ok(mut task_queue) => {
