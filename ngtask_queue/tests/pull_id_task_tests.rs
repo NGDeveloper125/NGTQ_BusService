@@ -43,13 +43,20 @@ fn id_valid_and_exist_test_pull_id_task_from_queue() {
 
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            task_queue.push_id_task(task);
-            match task_queue.pull_id_task(String::from("test")) {
-                Some(payloud) => {
-                    assert_eq!(payloud, payload);
-                    assert_eq!(task_queue.get_id_queue_len().unwrap(), 0)
+            match task_queue.push_id_task(task) {
+                Ok(_) => {
+                    match task_queue.pull_id_task(String::from("test")) {
+                        Some(payloud) => {
+                            assert_eq!(payloud, payload);
+                            assert_eq!(task_queue.get_id_queue_len().unwrap(), 0)
+                        },
+                        None => assert!(false)
+                    }
                 },
-                None => assert!(false)
+                Err(error) => {
+                    println!("Failed to push task to queue: {}", error);
+                    assert!(false)
+                }
             }
         },
         Err(error) => {

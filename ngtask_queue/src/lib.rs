@@ -1,4 +1,4 @@
-use std::{collections::HashMap, error::Error, sync::{Arc, Mutex}};
+use std::{collections::HashMap, sync::{Arc, Mutex}};
 
 use serde::{Deserialize, Serialize};
 
@@ -152,8 +152,13 @@ mod tests {
         match task_queue_arc.lock() {
             Ok(mut task_queue) => {
                 assert_eq!(task_queue.get_id_queue_len().unwrap(), 0);
-                task_queue.push_id_task(task);
-                assert_eq!(task_queue.get_id_queue_len().unwrap(), 1);
+                match task_queue.push_id_task(task) {
+                    Ok(_) => assert_eq!(task_queue.get_id_queue_len().unwrap(), 1),
+                    Err(error) => {
+                        println!("Failed to psuh task to queue: {}", error);
+                        assert!(false)
+                    }
+                }
             },
             Err(error) => {
                 println!("Failed to open queue: {}", error);

@@ -12,7 +12,7 @@ fn valid_new_message_test_push_id_task_to_queue() {
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
             let i = task_queue.push_id_task(id_task);
-            assert_eq!(i, 1);
+            assert_eq!(i, Ok(1));
             assert_eq!(task_queue.get_id_queue_len().unwrap(), 1)
         },
         Err(error) => {
@@ -33,7 +33,7 @@ fn valid_existing_id_message_test_push_id_task_to_queue() {
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
             let i = task_queue.push_id_task(id_task1);
-            assert_eq!(i, 1);
+            assert_eq!(i, Ok(1));
             assert_eq!(task_queue.get_id_queue_len().unwrap(), 1)
         },
         Err(error) => {
@@ -49,7 +49,7 @@ fn valid_existing_id_message_test_push_id_task_to_queue() {
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
             let i = task_queue.push_id_task(id_task2);
-            assert_eq!(i, 0);
+            assert_eq!(i, Err(String::from("Failed to push new task - A task with this id already exist in the queue")));
             assert_eq!(task_queue.get_id_queue_len().unwrap(), 1)
         },
         Err(error) => {
@@ -70,7 +70,7 @@ fn invalid_new_message_test_push_id_task_to_queue() {
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
             let i = task_queue.push_id_task(id_task);
-            assert_eq!(i, 0);
+            assert_eq!(i, Err(String::from("Failed to push new task - The task id or payload is empty")));
             assert_eq!(task_queue.get_id_queue_len().unwrap(), 0)
         },
         Err(error) => {
