@@ -11,9 +11,16 @@ fn valid_new_message_test_push_new_category_task_to_queue() {
 
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            let (number_of_queue, queue_len) = task_queue.push_category_task(task);
-            assert_eq!(number_of_queue, 1);
-            assert_eq!(queue_len, 1);
+            match task_queue.push_category_task(task) {
+                Ok((number_of_queue, queue_len)) => {
+                    assert_eq!(number_of_queue, 1);
+                    assert_eq!(queue_len, 1);        
+                },
+                Err(error) => {
+                    println!("{}", error);
+                    assert!(false)
+                }
+            }
         },
         Err(error) => {
             println!("Failed to open queue: {:?}", error);
@@ -32,9 +39,16 @@ fn valid_new_message_test_push_existing_category_task_to_queue() {
 
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            let (number_of_queue, queue_len) = task_queue.push_category_task(task);
-            assert_eq!(number_of_queue, 1);
-            assert_eq!(queue_len, 1);
+            match task_queue.push_category_task(task) {
+                Ok((number_of_queue, queue_len)) => {
+                    assert_eq!(number_of_queue, 1);
+                    assert_eq!(queue_len, 1);        
+                },
+                Err(error) => {
+                    println!("{}", error);
+                    assert!(false)
+                }
+            }
         },
         Err(error) => {
             println!("Failed to open queue: {:?}", error);
@@ -49,9 +63,16 @@ fn valid_new_message_test_push_existing_category_task_to_queue() {
 
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            let (number_of_queue, queue_len) = task_queue.push_category_task(task);
-            assert_eq!(number_of_queue, 1);
-            assert_eq!(queue_len, 2);
+            match task_queue.push_category_task(task) {
+                Ok((number_of_queue, queue_len)) => {
+                    assert_eq!(number_of_queue, 1);
+                    assert_eq!(queue_len, 2);        
+                },
+                Err(error) => {
+                    println!("{}", error);
+                    assert!(false)
+                }
+            }
         },
         Err(error) => {
             println!("Failed to open queue: {:?}", error);
@@ -70,9 +91,16 @@ fn invalid_category_new_message_test_push_category_task_to_queue() {
 
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            let (number_of_queue, queue_len) = task_queue.push_category_task(task);
-            assert_eq!(number_of_queue, 0);
-            assert_eq!(queue_len, 0);
+            match task_queue.push_category_task(task) {
+                Ok((number_of_queue, queue_len)) => {
+                    assert_eq!(number_of_queue, 0);
+                    assert_eq!(queue_len, 0);        
+                },
+                Err(error) => {
+                    println!("{}", error);
+                    assert!(false)
+                }
+            }
         },
         Err(error) => {
             println!("Failed to open queue: {:?}", error);
@@ -91,9 +119,16 @@ fn invalid_payload_new_message_test_push_category_task_to_queue() {
 
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            let (number_of_queue, queue_len) = task_queue.push_category_task(task);
-            assert_eq!(number_of_queue, 0);
-            assert_eq!(queue_len, 0);
+            match task_queue.push_category_task(task) {
+                Ok((number_of_queue, queue_len)) => {
+                    assert_eq!(number_of_queue, 0);
+                    assert_eq!(queue_len, 0);        
+                },
+                Err(error) => {
+                    println!("{}", error);
+                    assert!(false)
+                }
+            }
         },
         Err(error) => {
             println!("Failed to open queue: {:?}", error);

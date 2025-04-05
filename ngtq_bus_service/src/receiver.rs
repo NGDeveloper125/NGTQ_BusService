@@ -78,3 +78,18 @@ fn handle_id_task_push_request(task: IdTask, wrapped_task_queue: &Arc<Mutex<Task
         }
     }
 }
+
+fn handle_category_task_push_request(task: CategoryTask, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
+    match wrapped_task_queue.lock() {
+        Ok(mut task_queue) => {
+            match task_queue.push_category_task(task) {
+                Ok(_) => BusResponse { successful: true, error: String::new() },
+                Err(error) => BusResponse { successful: false, error: error.to_string() }
+            }
+        },
+        Err(error) => {
+            println!("Failed to push category task: {}", error);
+            return BusResponse { successful: false, error: error.to_string() };
+        }
+    }
+}
