@@ -33,9 +33,9 @@ fn queue_for_the_category_exist_test_pull_category_task() {
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
             let i = task_queue.push_category_task(task1);
-            assert_eq!(i, (1,1));
+            assert_eq!(i, Ok((1,1)));
             let e = task_queue.push_category_task(task2);
-            assert_eq!(e, (1,2));
+            assert_eq!(e, Ok((1,2)));
 
             match task_queue.pull_category_task(String::from("test")) {
                 Some(payload) => {
@@ -68,7 +68,7 @@ fn queue_for_the_category_exist_with_last_task_test_pull_category_task() {
     match task_queue_arc.lock() {
         Ok(mut queue) => {
             let i = queue.push_category_task(task);
-            assert_eq!(i, (1,1));
+            assert_eq!(i, Ok((1,1)));
 
             match queue.pull_category_task(String::from("test")) {
                 Some(payload) => {

@@ -73,24 +73,24 @@ impl TaskQueue {
     }
     
 
-    pub fn push_category_task(&mut self, task: CategoryTask) -> (usize, usize) {
+    pub fn push_category_task(&mut self, task: CategoryTask) -> Result<(usize, usize), String> {
         if !self.is_initialised {
-            return (0,0)
+            return Err(String::from("Failed to push new task - The TaskQueue was not initialised"))
         }
 
         if task.category == String::new() || task.payload == String::new() {
-            return (0,0)
+            return Err(String::from("Failed to push new task - The task topic or payload is empty"))
         } 
         match self.category_queues.get_mut(&task.category) {
             Some(queue) => {
                 let queue_size = push_category_task_to_existing_queue(queue, task);
-                return (self.category_queues.len(), queue_size)
+                return Ok((self.category_queues.len(), queue_size))
             },
             None => {
                 let mut new_queue = Vec::new();
                 new_queue.push(task.payload);
                 self.category_queues.insert(task.category.to_string(), new_queue);
-                return (self.category_queues.len(), 1);
+                return Ok((self.category_queues.len(), 1));
             }
         }
     }
