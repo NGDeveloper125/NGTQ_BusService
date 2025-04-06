@@ -7,7 +7,7 @@ fn no_queue_for_the_category_exist_test_pull_category_task() {
     match task_queue_arc.lock() {
         Ok(mut queue) => {
             let pull_task_result = queue.pull_category_task(String::from("test"));
-            assert_eq!(pull_task_result, None)
+            assert_eq!(pull_task_result, Err(String::from("Failed to pull task from queue - no tasks for this topic were found")))
         },
         Err(error) => {
             println!("Failed to open queue: {:?}", error);
@@ -38,11 +38,11 @@ fn queue_for_the_category_exist_test_pull_category_task() {
             assert_eq!(e, Ok((1,2)));
 
             match task_queue.pull_category_task(String::from("test")) {
-                Some(payload) => {
+                Ok(payload) => {
                     assert_eq!(payload, task_payload);
                 },
-                None => {
-                    println!("Failed to find task in queue");
+                Err(error)=> {
+                    println!("{}", error);
                     assert!(false)
                 }
             }
@@ -71,7 +71,7 @@ fn queue_for_the_category_exist_with_last_task_test_pull_category_task() {
             assert_eq!(i, Ok((1,1)));
 
             match queue.pull_category_task(String::from("test")) {
-                Some(payload) => {
+                Ok(payload) => {
                     assert_eq!(payload, task_payload);
                     match queue.get_category_queue("test") {
                         Some(_) => {
@@ -81,8 +81,8 @@ fn queue_for_the_category_exist_with_last_task_test_pull_category_task() {
                         None => assert!(true)
                     }
                 },
-                None => {
-                    println!("Failed to find task in queue");
+                Err(error) => {
+                    println!("{}", error);
                     assert!(false)
                 }
             }

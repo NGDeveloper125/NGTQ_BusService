@@ -105,21 +105,21 @@ impl TaskQueue {
         }
     }
 
-    pub fn pull_category_task(&mut self, category: String) -> Option<String> {
+    pub fn pull_category_task(&mut self, category: String) -> Result<String, String> {
         if !self.is_initialised {
-            return None
+            return Err(String::from("Failed to pull task - The TaskQueue was not initialised"))
         }
         match self.category_queues.remove(&category) {
             Some(mut queue) => {
                 if queue.len() > 1 {
                     let payload = queue.remove(0);
                     self.category_queues.insert(category.to_string(), queue);
-                    Some(payload)
+                    Ok(payload)
                 } else {
-                    Some(queue.remove(0))
+                    Ok(queue.remove(0))
                 }
             },
-            None => None
+            None => Err(String::from("Failed to pull task from queue - no tasks for this topic were found"))
         }
     }
 }
