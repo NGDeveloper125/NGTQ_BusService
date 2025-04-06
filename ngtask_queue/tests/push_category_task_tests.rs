@@ -92,13 +92,12 @@ fn invalid_category_new_message_test_push_category_task_to_queue() {
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
             match task_queue.push_category_task(task) {
-                Ok((number_of_queue, queue_len)) => {
-                    assert_eq!(number_of_queue, 0);
-                    assert_eq!(queue_len, 0);        
+                Ok(_) => {
+                    println!("Expected an error");
+                    assert!(false)
                 },
                 Err(error) => {
-                    println!("{}", error);
-                    assert!(false)
+                    assert_eq!(error, "Failed to push new task - The task topic or payload is empty")
                 }
             }
         },
@@ -120,13 +119,12 @@ fn invalid_payload_new_message_test_push_category_task_to_queue() {
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
             match task_queue.push_category_task(task) {
-                Ok((number_of_queue, queue_len)) => {
-                    assert_eq!(number_of_queue, 0);
-                    assert_eq!(queue_len, 0);        
+                Ok(_) => {
+                    println!("Expected an error");
+                    assert!(false)
                 },
                 Err(error) => {
-                    println!("{}", error);
-                    assert!(false)
+                    assert_eq!(error, "Failed to push new task - The task topic or payload is empty")
                 }
             }
         },
