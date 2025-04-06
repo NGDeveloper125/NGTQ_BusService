@@ -65,7 +65,20 @@ fn start_receiving(socket_path: String, tx: Sender<UnixStream>) {
     });
 }
 
-fn hundle_push_request(task: Task, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
+fn handle_incoming_request(incoming_request: String, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
+    let deserialized_request: IncomingRequest = match serde_json::from_str(&incoming_request) {
+        Ok(incoming_request) => incoming_request,
+        Err(error) => return BusResponse { successful: false, error: error.to_string(), payload: String::new() }
+    };
+
+    match deserialized_request {
+        IncomingRequest::PushTask(task) => handle_push_request(task, wrapped_task_queue),
+        IncomingRequest::PullTask(task_identifier) => handle_pull_request(task_identifier, wrapped_task_queue),
+        IncomingRequest::Error(error) => BusResponse { successful: false, error: error, payload: String::new() }
+    }
+}
+
+fn handle_push_request(task: Task, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
     match task {
         Task::Id(id_task) => handle_id_task_push_request(id_task, wrapped_task_queue),
         Task::Category(category_task) => handle_category_task_push_request(category_task, wrapped_task_queue),
