@@ -1,5 +1,5 @@
 
-use std::{os::unix::net::{UnixListener, UnixStream}, sync::{mpsc::Sender, Arc, Mutex}, thread};
+use std::{os::unix::net::{UnixListener, UnixStream}, string, sync::{mpsc::Sender, Arc, Mutex}, thread};
 
 use ngtask_queue::{CategoryTask, IdTask, TaskQueue};
 use serde::{Deserialize, Serialize};
@@ -28,7 +28,8 @@ enum Task {
 #[derive(Debug, Serialize, Deserialize)]
 struct BusResponse {
     pub successful: bool,
-    pub error: String
+    pub error: String,
+    pub payload: String
 }
 
 pub struct Receiver {
@@ -68,7 +69,7 @@ fn hundle_push_request(task: Task, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -
     match task {
         Task::Id(id_task) => handle_id_task_push_request(id_task, wrapped_task_queue),
         Task::Category(category_task) => handle_category_task_push_request(category_task, wrapped_task_queue),
-        Task::Error(error) => BusResponse { successful: false, error: error }
+        Task::Error(error) => BusResponse { successful: false, error: error, payload: String::new() }
     }
 }
 
@@ -76,13 +77,13 @@ fn handle_id_task_push_request(task: IdTask, wrapped_task_queue: &Arc<Mutex<Task
     match wrapped_task_queue.lock() {
         Ok(mut task_queue) => {
             match task_queue.push_id_task(task) {
-                Ok(_) => BusResponse { successful: true, error: String::new() },
-                Err(error) => BusResponse { successful: false, error: error }
+                Ok(_) => BusResponse { successful: true, error: String::new(), payload: String::new() },
+                Err(error) => BusResponse { successful: false, error: error, payload: String::new() }
             }
         },
         Err(error) => {
             println!("Failed to push id task: {}", error);
-            return BusResponse { successful: false, error: error.to_string() } 
+            return BusResponse { successful: false, error: error.to_string(), payload: String::new() } 
         }
     }
 }
@@ -91,13 +92,25 @@ fn handle_category_task_push_request(task: CategoryTask, wrapped_task_queue: &Ar
     match wrapped_task_queue.lock() {
         Ok(mut task_queue) => {
             match task_queue.push_category_task(task) {
-                Ok(_) => BusResponse { successful: true, error: String::new() },
-                Err(error) => BusResponse { successful: false, error: error.to_string() }
+                Ok(_) => BusResponse { successful: true, error: String::new(), payload: String::new() },
+                Err(error) => BusResponse { successful: false, error: error.to_string(), payload: String::new() }
             }
         },
         Err(error) => {
             println!("Failed to push category task: {}", error);
-            return BusResponse { successful: false, error: error.to_string() };
+            return BusResponse { successful: false, error: error.to_string(), payload: String::new() };
         }
+    }
+}
+
+fn handle_id_task_pull_request(task_id: String, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
+    match wrapped_task_queue.lock() {
+        Ok(mut task_queue) => {
+            match task_queue.pull_id_task(task_id) {
+                Ok(payload) => BusResponse { successful: true, error: String::new(), payload: payload },
+                Err(error) => BusResponse { successful: false, error: error, payload: String::new() }
+            }
+        },
+        Err(error) => BusResponse { successful: false, error: error.to_string(), payload: String::new() }
     }
 }
