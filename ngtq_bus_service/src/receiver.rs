@@ -114,3 +114,15 @@ fn handle_id_task_pull_request(task_id: String, wrapped_task_queue: &Arc<Mutex<T
         Err(error) => BusResponse { successful: false, error: error.to_string(), payload: String::new() }
     }
 }
+
+fn handle_category_task_pull_request(task_category: String, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
+    match wrapped_task_queue.lock() {
+        Ok(mut task_queue) => {
+            match task_queue.pull_category_task(task_category) {
+                Ok(payload) => BusResponse { successful: true, error: String::new(), payload: payload },
+                Err(error) => BusResponse { successful: false, error: error, payload: String::new() }
+            }
+        },
+        Err(error) => BusResponse { successful: false, error: error.to_string(), payload: String::new() }
+    }
+}
