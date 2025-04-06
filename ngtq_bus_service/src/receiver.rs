@@ -73,6 +73,14 @@ fn hundle_push_request(task: Task, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -
     }
 }
 
+fn handle_pull_request(task_identifier: TaskIdentifier, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
+    match task_identifier {
+        TaskIdentifier::Id(task_id) => handle_id_task_pull_request(task_id, wrapped_task_queue),
+        TaskIdentifier::Category(task_category) => handle_category_task_pull_request(task_category, wrapped_task_queue),
+        TaskIdentifier::Error(error) => BusResponse { successful: false, error: error, payload: String::new() }
+    }
+}
+
 fn handle_id_task_push_request(task: IdTask, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
     match wrapped_task_queue.lock() {
         Ok(mut task_queue) => {
