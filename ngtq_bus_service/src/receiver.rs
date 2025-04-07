@@ -1,5 +1,5 @@
 
-use std::{os::unix::net::{UnixListener, UnixStream}, string, sync::{mpsc::Sender, Arc, Mutex}, thread};
+use std::{io::{Read, Write}, os::unix::net::{UnixListener, UnixStream}, string, sync::{mpsc::{self, Sender}, Arc, Mutex}, thread};
 
 use ngtask_queue::{CategoryTask, IdTask, TaskQueue};
 use serde::{Deserialize, Serialize};
@@ -37,7 +37,39 @@ pub struct Receiver {
 }
 
 impl Receiver  {
-    
+    pub fn start_receiver(&self, socket_path: &str, keep_running: &bool) -> Result<(), String> {
+        let wrapped_task_queue = TaskQueue::initialise();
+        let (tx, rx): (mpsc::Sender<UnixStream>, mpsc::Receiver<UnixStream>) = mpsc::channel();
+
+        start_receiving(socket_path.to_string(), tx);
+
+        while *keep_running {
+            match rx.recv() {
+                Ok(mut stream) => {
+                    let mut buffer: [u8; 1024] = [0; 1024];
+                    match stream.read(&mut buffer) {
+                        Ok(bytes) => {
+                            let incoming_request = String::from_utf8_lossy(&buffer[..bytes]);
+                            let response = handle_incoming_request(incoming_request.to_string(), &wrapped_task_queue);
+                            match serde_json::to_string(&response) {
+                                Ok(serialised_response ) => {
+                                    match stream.write_all(serialised_response.as_bytes()) {
+                                        Ok(_) => (), // log?
+                                        Err(error) => return Err(error.to_string())
+                                    }
+                                },
+                                Err(error) => return Err(error.to_string())
+                            }
+                        },
+                        Err(error) => return Err(error.to_string())
+                    }
+                    
+                },
+                Err(error) => return Err(error.to_string())    
+            }
+        }
+        Ok(())
+    }
 }
 
 fn start_receiving(socket_path: String, tx: Sender<UnixStream>) {
