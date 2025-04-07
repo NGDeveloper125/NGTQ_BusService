@@ -1,5 +1,5 @@
 
-use std::{io::{Read, Write}, os::unix::net::{UnixListener, UnixStream}, string, sync::{mpsc::{self, Sender}, Arc, Mutex}, thread};
+use std::{io::{Read, Write}, os::unix::net::{UnixListener, UnixStream}, sync::{mpsc::{self, Sender}, Arc, Mutex}, thread};
 
 use ngtask_queue::{CategoryTask, IdTask, TaskQueue};
 use serde::{Deserialize, Serialize};
@@ -63,7 +63,6 @@ impl Receiver  {
                         },
                         Err(error) => return Err(error.to_string())
                     }
-                    
                 },
                 Err(error) => return Err(error.to_string())    
             }
