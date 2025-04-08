@@ -101,7 +101,7 @@ impl TaskQueue {
         }
         match self.id_queue.remove(&id) {
             Some(payload) => Ok(payload),
-            None => Err(String::from("Failed to pull task from queue - task with this was not found in queue"))
+            None => Err(String::from("Failed to pull task from queue - task with this id was not found in queue"))
         }
     }
 
