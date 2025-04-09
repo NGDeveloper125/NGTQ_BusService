@@ -2,40 +2,6 @@ use std::{io::{Read, Write}, os::unix::net::UnixStream, thread};
 
 use serde::{Deserialize, Serialize};
 
-
-#[derive(Debug, Serialize, Deserialize)]
-enum IncomingRequest {
-    PushTask(Task),
-    PullTask(TaskIdentifier),
-    Error(String)
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-enum TaskIdentifier {
-    Id(String),
-    Category(String),
-    Error(String)
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct IdTask {
-    id: String,
-    payload: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct CategoryTask {
-    id: String,
-    payload: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub enum Task {
-    Id(IdTask),
-    Category(CategoryTask),
-    Error(String)
-}
-
 fn main() -> std::io::Result<()> {
     let mut handlers = Vec::new();
     let mut switch = true;
