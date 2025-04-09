@@ -57,28 +57,34 @@ impl BusServiceClient {
         }
 
         let serialise_task = serde_json::to_string(&BusRequest::PushTask(Task::Id(id_task))).unwrap();
-        let buffer = serialise_task.as_bytes();
-        match UnixStream::connect(&self.bus_address) {
-            Ok(mut stream) => {
-                
-                match stream.write_all(buffer) {
-                    Ok(_) => {
-                        let mut response: String = String::new();
-                        match stream.read_to_string(&mut response) {
-                            Ok(_) => {
-                                match response.parse::<usize>() {
-                                    Ok(queue_size) => Ok(queue_size),
-                                    Err(error) => Err(format!("Failed to parse queue size to usize: {}", error.to_string()))
-                                }
-                            },
-                            Err(error) => Err(format!("Failed to receive response from bus: {}", error))
-                        }
-                    },
-                    Err(error) => Err(format!("Failed to send to bus: {}", error))
+        match send_request_to_bus(serialise_task, &self.bus_address) {
+            Ok(response) => {
+                match response.parse::<usize>() {
+                    Ok(queue_size) => Ok(queue_size),
+                    Err(error) => Err(format!("Failed to parse queue size to usize: {}", error.to_string()))
                 }
             },
-            Err(error) => Err(format!("Failed to connect: {}", error))
+            Err(error) => Err(error)
         }
     }
+}
 
+fn send_request_to_bus(serialise_request: String, bus_address: &str) -> Result<String, String> {
+    let buffer = serialise_request.as_bytes();
+    match UnixStream::connect(bus_address) {
+        Ok(mut stream) => {
+            
+            match stream.write_all(buffer) {
+                Ok(_) => {
+                    let mut response: String = String::new();
+                    match stream.read_to_string(&mut response) {
+                        Ok(_) => Ok(response),
+                        Err(error) => Err(format!("Failed to receive response from bus: {}", error))
+                    }
+                },
+                Err(error) => Err(format!("Failed to send to bus: {}", error))
+            }
+        },
+        Err(error) => Err(format!("Failed to connect: {}", error))
+    }
 }
