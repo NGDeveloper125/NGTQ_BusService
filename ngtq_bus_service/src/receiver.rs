@@ -129,7 +129,7 @@ fn handle_id_task_push_request(task: IdTask, wrapped_task_queue: &Arc<Mutex<Task
     match wrapped_task_queue.lock() {
         Ok(mut task_queue) => {
             match task_queue.push_id_task(task) {
-                Ok(_) => BusResponse { successful: true, error: String::new(), payload: String::new() },
+                Ok(queue_size) => BusResponse { successful: true, error: String::new(), payload: queue_size.to_string() },
                 Err(error) => BusResponse { successful: false, error: error, payload: String::new() }
             }
         },
