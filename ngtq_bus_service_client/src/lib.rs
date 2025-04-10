@@ -53,7 +53,7 @@ impl BusServiceClient {
 
     pub fn send_id_task_to_bus(&self, id_task: IdTask) -> Result<usize, String> {
         if !self.is_initialise {
-            return Err(String::from("Failed to send task - BusServiceClient is not intilised!"))
+            return Err(String::from("Failed to send task - BusServiceClient is not initilised!"))
         }
 
         let serialise_task = serde_json::to_string(&BusRequest::PushTask(Task::Id(id_task))).unwrap();
@@ -64,6 +64,18 @@ impl BusServiceClient {
                     Err(error) => Err(format!("Failed to parse queue size to usize: {}", error.to_string()))
                 }
             },
+            Err(error) => Err(error)
+        }
+    }
+
+    pub fn send_category_task_to_bus(&self, category_task: CategoryTask) -> Result<String, String> {
+        if !self.is_initialise {
+            return Err(String::from("Failed to send task - BusServiceClient is not initilised"));
+        }
+
+        let serialised_task = serde_json::to_string(&BusRequest::PushTask(Task::Category(category_task))).unwrap();
+        match send_request_to_bus(serialised_task, &self.bus_address) {
+            Ok(response) => Ok(response),
             Err(error) => Err(error)
         }
     }
