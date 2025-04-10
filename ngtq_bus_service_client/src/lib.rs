@@ -41,9 +41,14 @@ impl BusServiceClient {
             return Err(String::from("Failed to send task - BusServiceClient is not initilised"));
         }
 
-        let serialised_task = serde_json::to_string(&BusRequest::PushTask(Task::Category(category_task))).unwrap();
-        match send_request_to_bus(serialised_task, &self.bus_address) {
-            Ok(response) => Ok(response),
+        match category_task.is_valid() {
+            Ok(_) => {
+                let serialised_task = serde_json::to_string(&BusRequest::PushTask(Task::Category(category_task))).unwrap();
+                match send_request_to_bus(serialised_task, &self.bus_address) {
+                    Ok(response) => Ok(response),
+                    Err(error) => Err(error)
+                }
+            },
             Err(error) => Err(error)
         }
     }
