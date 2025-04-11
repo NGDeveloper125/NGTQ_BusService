@@ -62,16 +62,32 @@ impl BusServiceClient {
             return Err(String::from("Failed to pull task - Id can not be empty"));
         }
 
-        let serialised_task = serde_json::to_string(&BusRequest::PullTask(TaskIdentifier::Id(id))).unwrap();
-        match send_request_to_bus(serialised_task, &self.bus_address) {
+        let serialised_request = serde_json::to_string(&BusRequest::PullTask(TaskIdentifier::Id(id))).unwrap();
+        match send_request_to_bus(serialised_request, &self.bus_address) {
+            Ok(response) => Ok(response),
+            Err(error) => Err(error)
+        }
+    }
+
+    pub fn pull_category_task_from_bus(&self, category: String) -> Result<String, String> {
+        if !self.is_initialise {
+            return Err(String::from("Failed to pull task - BusServiceClient is not initilised"));
+        }
+
+        if category.is_empty() {
+            return Err(String::from("Faield to pull task - Category can not be empty"));
+        }
+
+        let serialised_request = serde_json::to_string(&BusRequest::PullTask(TaskIdentifier::Category(category))).unwrap();
+        match send_request_to_bus(serialised_request, &self.bus_address) {
             Ok(response) => Ok(response),
             Err(error) => Err(error)
         }
     }
 }
 
-fn send_request_to_bus(serialise_request: String, bus_address: &str) -> Result<String, String> {
-    let buffer = serialise_request.as_bytes();
+fn send_request_to_bus(serialised_request: String, bus_address: &str) -> Result<String, String> {
+    let buffer = serialised_request.as_bytes();
     match UnixStream::connect(bus_address) {
         Ok(mut stream) => {
             
