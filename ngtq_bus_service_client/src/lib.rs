@@ -1,5 +1,5 @@
 use std::{io::{Read, Write}, os::unix::net::UnixStream};
-use models::{BusRequest, CategoryTask, IdTask, Task};
+use models::{BusRequest, CategoryTask, IdTask, Task, TaskIdentifier};
 
 mod models;
 
@@ -49,6 +49,22 @@ impl BusServiceClient {
                     Err(error) => Err(error)
                 }
             },
+            Err(error) => Err(error)
+        }
+    }
+
+    pub fn pull_id_task_from_bus(&self, id: String) -> Result<String, String> {
+        if !self.is_initialise {
+            return Err(String::from("Failed to pull task - BusServiceClient is not initilised"));
+        }
+        
+        if id.is_empty() {
+            return Err(String::from("Failed to pull task - Id can not be empty"));
+        }
+
+        let serialised_task = serde_json::to_string(&BusRequest::PullTask(TaskIdentifier::Id(id))).unwrap();
+        match send_request_to_bus(serialised_task, &self.bus_address) {
+            Ok(response) => Ok(response),
             Err(error) => Err(error)
         }
     }
