@@ -18,14 +18,14 @@ pub enum TaskIdentifier {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct IdTask {
-    id: String,
-    payload: String,
+    pub id: String,
+    pub payload: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CategoryTask {
-    category: String,
-    payload: String,
+    pub category: String,
+    pub payload: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
