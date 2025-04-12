@@ -1,5 +1,5 @@
 use std::{io::{Read, Write}, os::unix::net::UnixStream};
-use models::{BusRequest, CategoryTask, IdTask, Task, TaskIdentifier};
+use models::{BusRequest, BusResponse, CategoryTask, IdTask, Task, TaskIdentifier};
 
 mod models;
 
@@ -64,7 +64,7 @@ impl BusServiceClient {
 
         let serialised_request = serde_json::to_string(&BusRequest::PullTask(TaskIdentifier::Id(id))).unwrap();
         match send_request_to_bus(serialised_request, &self.bus_address) {
-            Ok(response) => Ok(response),
+            Ok(serialised_response) => handle_bus_response(serialised_response),
             Err(error) => Err(error)
         }
     }
@@ -80,7 +80,7 @@ impl BusServiceClient {
 
         let serialised_request = serde_json::to_string(&BusRequest::PullTask(TaskIdentifier::Category(category))).unwrap();
         match send_request_to_bus(serialised_request, &self.bus_address) {
-            Ok(response) => Ok(response),
+            Ok(serialised_response) => handle_bus_response(serialised_response),
             Err(error) => Err(error)
         }
     }
@@ -104,4 +104,12 @@ fn send_request_to_bus(serialised_request: String, bus_address: &str) -> Result<
         },
         Err(error) => Err(format!("Failed to connect: {}", error))
     }
+}
+
+fn handle_bus_response(serialised_response: String) -> Result<String, String> {
+    let response: BusResponse = serde_json::from_str(&serialised_response).unwrap();
+    if response.successful {
+        return Ok(response.payload)
+    }
+    Err(response.error)
 }
