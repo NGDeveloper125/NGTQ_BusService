@@ -1,0 +1,53 @@
+name: Rust CI
+
+on:
+  pull_request:
+    branches: [main, dev_mvp]
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      # Step 1: Build all projects
+      - name: Build ngtask_queue library
+        run: cargo build --verbose --manifest-path ngtask_queue/Cargo.toml
+        
+      - name: Build ngtq_bus_service application
+        run: cargo build --verbose --manifest-path ngtq_bus_service/Cargo.toml
+        
+      - name: Build ngtq_bus_service_client library
+        run: cargo build --verbose --manifest-path ngtq_bus_service_client/Cargo.toml
+        
+      - name: Build ngtq_integration_test application
+        run: cargo build --verbose --manifest-path ngtq_integration_test/Cargo.toml
+
+      # Step 2: Run tests for ngtask_queue
+      - name: Test ngtask_queue
+        run: cargo test --verbose --manifest-path ngtask_queue/Cargo.toml
+
+      # Step 3: Run tests for ngtq_integration_test
+      - name: Run integration tests
+        run: cargo test --verbose --manifest-path ngtq_integration_test/Cargo.toml

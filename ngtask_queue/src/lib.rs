@@ -183,7 +183,7 @@ mod tests {
         match task_queue_arc.lock() {
             Ok(mut task_queue) => {
                 assert_eq!(task_queue.get_category_queue_len(&category).unwrap(), 0);
-                task_queue.push_category_task(task);
+                task_queue.push_category_task(task).expect("Failed to push task to queue");
                 assert_eq!(task_queue.get_category_queue_len(&category).unwrap(), 1);
             },
             Err(error) => {
