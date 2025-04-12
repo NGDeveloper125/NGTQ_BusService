@@ -1,5 +1,5 @@
 use std::{io::{Read, Write}, os::unix::net::UnixStream};
-use models::{BusRequest, BusResponse, CategoryTask, IdTask, Task, TaskIdentifier};
+pub use models::{BusRequest, BusResponse, CategoryTask, IdTask, Task, TaskIdentifier};
 
 mod models;
 
@@ -13,7 +13,7 @@ impl BusServiceClient {
         BusServiceClient { is_initialise: true, bus_address: bus_address }
     }
 
-    pub fn send_id_task_to_bus(&self, id_task: IdTask) -> Result<usize, String> {
+    pub fn send_id_task_to_bus(&self, id_task: IdTask) -> Result<String, String> {
         if !self.is_initialise {
             return Err(String::from("Failed to send task - BusServiceClient is not initilised!"))
         }
@@ -23,13 +23,8 @@ impl BusServiceClient {
 
                 let serialise_task = serde_json::to_string(&BusRequest::PushTask(Task::Id(id_task))).unwrap();
                 match send_request_to_bus(serialise_task, &self.bus_address) {
-                    Ok(response) => {
-                        match response.parse::<usize>() {
-                            Ok(queue_size) => Ok(queue_size),
-                            Err(error) => Err(format!("Failed to parse queue size to usize: {}", error.to_string()))
-                        }
-                    },
-                    Err(error) => Err(error)
+                    Ok(serialised_response) => handle_bus_response(serialised_response),
+                    Err(error) => Err(format!("Failed to parse queue size to usize: {}", error.to_string()))
                 }
             },
             Err(error) => return Err(error)
@@ -45,7 +40,7 @@ impl BusServiceClient {
             Ok(_) => {
                 let serialised_task = serde_json::to_string(&BusRequest::PushTask(Task::Category(category_task))).unwrap();
                 match send_request_to_bus(serialised_task, &self.bus_address) {
-                    Ok(response) => Ok(response),
+                    Ok(serialised_response) => handle_bus_response(serialised_response),
                     Err(error) => Err(error)
                 }
             },
