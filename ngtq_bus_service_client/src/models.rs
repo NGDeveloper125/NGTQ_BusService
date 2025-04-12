@@ -37,9 +37,9 @@ pub enum Task {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BusResponse {
-    successful: bool, 
-    error: String, 
-    payload: String
+    pub successful: bool, 
+    pub error: String, 
+    pub payload: String
 }
 
 impl IdTask {
