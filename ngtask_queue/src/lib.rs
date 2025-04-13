@@ -1,15 +1,11 @@
 use std::{collections::HashMap, sync::{Arc, Mutex}};
-use ngtq::{ NGCategoryTask, NGIdTask, NGTaskQueue, NGTQ };
+use ngtq::{ NGCategoryTask, NGIdTask, NGTQ };
 use serde::{Deserialize, Serialize};
 
 pub struct TaskQueue {
     pub is_initialised: bool,
     pub id_queue: HashMap<String, String>,
     pub category_queues: HashMap<String, Vec<String>>,
-}
-
-impl NGTaskQueue for TaskQueue {
-    
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -44,7 +40,7 @@ impl NGCategoryTask for CategoryTask {
     }
 }
 
-impl NGTQ<TaskQueue> for TaskQueue {
+impl NGTQ for TaskQueue {
     fn initialise() -> Arc<Mutex<TaskQueue>> {
         let is_initialised = true;
         let id_queue: HashMap<String, String> = HashMap::new();

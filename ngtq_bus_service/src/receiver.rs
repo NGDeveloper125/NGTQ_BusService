@@ -1,13 +1,12 @@
 
 use std::{io::{Read, Write}, os::unix::net::{UnixListener, UnixStream}, sync::{mpsc::{self, Sender}, Arc, Mutex}, thread};
-
-use ngtask_queue::{CategoryTask, IdTask, TaskQueue};
-use ngtq::NGTQ;
+use ngtq::{NGCategoryTask, NGIdTask, NGTQ};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-enum BusRequest {
-    PushTask(Task),
+#[serde(bound = "IdTask: NGIdTask, CategoryTask: NGCategoryTask")]
+enum BusRequest<IdTask: NGIdTask, CategoryTask: NGCategoryTask> {
+    PushTask(Task<IdTask, CategoryTask>),
     PullTask(TaskIdentifier),
     Error(String)
 }
@@ -20,7 +19,8 @@ enum TaskIdentifier {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-enum Task {
+#[serde(bound = "IdTask: NGIdTask, CategoryTask: NGCategoryTask")]
+enum Task<IdTask: NGIdTask, CategoryTask: NGCategoryTask> {
     Id(IdTask),
     Category(CategoryTask),
     Error(String)
@@ -38,8 +38,8 @@ pub struct Receiver {
 }
 
 impl Receiver  {
-    pub fn start_receiver(&self, socket_path: &str, keep_running: &bool) -> Result<(), String> {
-        let wrapped_task_queue = TaskQueue::initialise();
+    pub fn start_receiver<T: NGTQ, IdTask: NGIdTask, CategoryTask: NGCategoryTask>(&self, socket_path: &str, keep_running: &bool) -> Result<(), String> {
+        let wrapped_task_queue = T::initialise();
         let (tx, rx): (mpsc::Sender<UnixStream>, mpsc::Receiver<UnixStream>) = mpsc::channel();
 
         start_receiving(socket_path.to_string(), tx);
@@ -51,7 +51,7 @@ impl Receiver  {
                     match stream.read(&mut buffer) {
                         Ok(bytes) => {
                             let incoming_request = String::from_utf8_lossy(&buffer[..bytes]);
-                            let response = handle_incoming_request(incoming_request.to_string(), &wrapped_task_queue);
+                            let response = handle_incoming_request::<T, IdTask, CategoryTask>(incoming_request.to_string(), &wrapped_task_queue);
                             match serde_json::to_string(&response) {
                                 Ok(serialised_response ) => {
                                     match stream.write_all(serialised_response.as_bytes()) {
@@ -97,8 +97,8 @@ fn start_receiving(socket_path: String, tx: Sender<UnixStream>) {
     });
 }
 
-fn handle_incoming_request(incoming_request: String, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
-    let deserialized_request: BusRequest = match serde_json::from_str(&incoming_request) {
+fn handle_incoming_request<T: NGTQ, IdTask: NGIdTask, CategoryTask: NGCategoryTask>(incoming_request: String, wrapped_task_queue: &Arc<Mutex<T>>) -> BusResponse {
+    let deserialized_request: BusRequest<IdTask, CategoryTask> = match serde_json::from_str(&incoming_request) {
         Ok(incoming_request) => incoming_request,
         Err(error) => return BusResponse { successful: false, error: error.to_string(), payload: String::new() }
     };
@@ -110,7 +110,7 @@ fn handle_incoming_request(incoming_request: String, wrapped_task_queue: &Arc<Mu
     }
 }
 
-fn handle_push_request(task: Task, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
+fn handle_push_request<T: NGTQ, IdTask: NGIdTask, CategoryTask: NGCategoryTask>(task: Task<IdTask, CategoryTask>, wrapped_task_queue: &Arc<Mutex<T>>) -> BusResponse {
     match task {
         Task::Id(id_task) => handle_id_task_push_request(id_task, wrapped_task_queue),
         Task::Category(category_task) => handle_category_task_push_request(category_task, wrapped_task_queue),
@@ -118,7 +118,7 @@ fn handle_push_request(task: Task, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -
     }
 }
 
-fn handle_pull_request(task_identifier: TaskIdentifier, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
+fn handle_pull_request<T: NGTQ>(task_identifier: TaskIdentifier, wrapped_task_queue: &Arc<Mutex<T>>) -> BusResponse {
     match task_identifier {
         TaskIdentifier::Id(task_id) => handle_id_task_pull_request(task_id, wrapped_task_queue),
         TaskIdentifier::Category(task_category) => handle_category_task_pull_request(task_category, wrapped_task_queue),
@@ -126,7 +126,7 @@ fn handle_pull_request(task_identifier: TaskIdentifier, wrapped_task_queue: &Arc
     }
 }
 
-fn handle_id_task_push_request(task: IdTask, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
+fn handle_id_task_push_request<T: NGTQ, IdTask: NGIdTask>(task: IdTask, wrapped_task_queue: &Arc<Mutex<T>>) -> BusResponse {
     match wrapped_task_queue.lock() {
         Ok(mut task_queue) => {
             match task_queue.push_id_task_to_queue(task) {
@@ -141,7 +141,7 @@ fn handle_id_task_push_request(task: IdTask, wrapped_task_queue: &Arc<Mutex<Task
     }
 }
 
-fn handle_category_task_push_request(task: CategoryTask, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
+fn handle_category_task_push_request<T: NGTQ, CategoryTask: NGCategoryTask>(task: CategoryTask, wrapped_task_queue: &Arc<Mutex<T>>) -> BusResponse {
     match wrapped_task_queue.lock() {
         Ok(mut task_queue) => {
             match task_queue.push_category_task_to_queue(task) {
@@ -156,7 +156,7 @@ fn handle_category_task_push_request(task: CategoryTask, wrapped_task_queue: &Ar
     }
 }
 
-fn handle_id_task_pull_request(task_id: String, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
+fn handle_id_task_pull_request<T: NGTQ>(task_id: String, wrapped_task_queue: &Arc<Mutex<T>>) -> BusResponse {
     match wrapped_task_queue.lock() {
         Ok(mut task_queue) => {
             match task_queue.pull_id_task_from_queue(task_id) {
@@ -168,7 +168,7 @@ fn handle_id_task_pull_request(task_id: String, wrapped_task_queue: &Arc<Mutex<T
     }
 }
 
-fn handle_category_task_pull_request(task_category: String, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
+fn handle_category_task_pull_request<T: NGTQ>(task_category: String, wrapped_task_queue: &Arc<Mutex<T>>) -> BusResponse {
     match wrapped_task_queue.lock() {
         Ok(mut task_queue) => {
             match task_queue.pull_category_task_from_queue(task_category) {
