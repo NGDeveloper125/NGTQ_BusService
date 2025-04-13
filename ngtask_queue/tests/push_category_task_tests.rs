@@ -1,4 +1,5 @@
 use ngtask_queue::{CategoryTask, TaskQueue};
+use ngtq::NGTQ;
 
 
 #[test]
@@ -11,10 +12,18 @@ fn valid_new_message_test_push_new_category_task_to_queue() {
 
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            match task_queue.push_category_task(task) {
-                Ok((number_of_queue, queue_len)) => {
-                    assert_eq!(number_of_queue, 1);
-                    assert_eq!(queue_len, 1);        
+            match task_queue.push_category_task_to_queue(task) {
+                Ok(()) => {
+                    match task_queue.get_category_queue_len("test") {
+                        Ok(queue_size) => {
+                            assert_eq!(task_queue.category_queues.len(), 1);
+                            assert_eq!(queue_size, 1);
+                        },
+                        Err(error) => {
+                            println!("Failed to get queue length: {}", error);
+                            assert!(false)
+                        }        
+                    }
                 },
                 Err(error) => {
                     println!("{}", error);
@@ -39,10 +48,18 @@ fn valid_new_message_test_push_existing_category_task_to_queue() {
 
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            match task_queue.push_category_task(task) {
-                Ok((number_of_queue, queue_len)) => {
-                    assert_eq!(number_of_queue, 1);
-                    assert_eq!(queue_len, 1);        
+            match task_queue.push_category_task_to_queue(task) {
+                Ok(()) => {
+                    match task_queue.get_category_queue_len("test") {
+                        Ok(queue_size) => {
+                            assert_eq!(task_queue.category_queues.len(), 1);
+                            assert_eq!(queue_size, 1);
+                        },
+                        Err(error) => {
+                            println!("Failed to get queue length: {}", error);
+                            assert!(false)
+                        }        
+                    }      
                 },
                 Err(error) => {
                     println!("{}", error);
@@ -63,10 +80,18 @@ fn valid_new_message_test_push_existing_category_task_to_queue() {
 
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            match task_queue.push_category_task(task) {
-                Ok((number_of_queue, queue_len)) => {
-                    assert_eq!(number_of_queue, 1);
-                    assert_eq!(queue_len, 2);        
+            match task_queue.push_category_task_to_queue(task) {
+                Ok(()) => {
+                    match task_queue.get_category_queue_len("test") {
+                        Ok(queue_size) => {
+                            assert_eq!(task_queue.category_queues.len(), 1);
+                            assert_eq!(queue_size, 2);
+                        },
+                        Err(error) => {
+                            println!("Failed to get queue length: {}", error);
+                            assert!(false)
+                        }        
+                    }    
                 },
                 Err(error) => {
                     println!("{}", error);
@@ -91,7 +116,7 @@ fn invalid_category_new_message_test_push_category_task_to_queue() {
 
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            match task_queue.push_category_task(task) {
+            match task_queue.push_category_task_to_queue(task) {
                 Ok(_) => {
                     println!("Expected an error");
                     assert!(false)
@@ -118,7 +143,7 @@ fn invalid_payload_new_message_test_push_category_task_to_queue() {
 
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            match task_queue.push_category_task(task) {
+            match task_queue.push_category_task_to_queue(task) {
                 Ok(_) => {
                     println!("Expected an error");
                     assert!(false)

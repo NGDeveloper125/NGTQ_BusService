@@ -2,6 +2,7 @@
 use std::{io::{Read, Write}, os::unix::net::{UnixListener, UnixStream}, sync::{mpsc::{self, Sender}, Arc, Mutex}, thread};
 
 use ngtask_queue::{CategoryTask, IdTask, TaskQueue};
+use ngtq::NGTQ;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -128,8 +129,8 @@ fn handle_pull_request(task_identifier: TaskIdentifier, wrapped_task_queue: &Arc
 fn handle_id_task_push_request(task: IdTask, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
     match wrapped_task_queue.lock() {
         Ok(mut task_queue) => {
-            match task_queue.push_id_task(task) {
-                Ok(queue_size) => BusResponse { successful: true, error: String::new(), payload: queue_size.to_string() },
+            match task_queue.push_id_task_to_queue(task) {
+                Ok(_) => BusResponse { successful: true, error: String::new(), payload: String::new() },
                 Err(error) => BusResponse { successful: false, error: error, payload: String::new() }
             }
         },
@@ -143,7 +144,7 @@ fn handle_id_task_push_request(task: IdTask, wrapped_task_queue: &Arc<Mutex<Task
 fn handle_category_task_push_request(task: CategoryTask, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
     match wrapped_task_queue.lock() {
         Ok(mut task_queue) => {
-            match task_queue.push_category_task(task) {
+            match task_queue.push_category_task_to_queue(task) {
                 Ok(_) => BusResponse { successful: true, error: String::new(), payload: String::new() },
                 Err(error) => BusResponse { successful: false, error: error.to_string(), payload: String::new() }
             }
@@ -158,7 +159,7 @@ fn handle_category_task_push_request(task: CategoryTask, wrapped_task_queue: &Ar
 fn handle_id_task_pull_request(task_id: String, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
     match wrapped_task_queue.lock() {
         Ok(mut task_queue) => {
-            match task_queue.pull_id_task(task_id) {
+            match task_queue.pull_id_task_from_queue(task_id) {
                 Ok(payload) => BusResponse { successful: true, error: String::new(), payload: payload },
                 Err(error) => BusResponse { successful: false, error: error, payload: String::new() }
             }
@@ -170,7 +171,7 @@ fn handle_id_task_pull_request(task_id: String, wrapped_task_queue: &Arc<Mutex<T
 fn handle_category_task_pull_request(task_category: String, wrapped_task_queue: &Arc<Mutex<TaskQueue>>) -> BusResponse {
     match wrapped_task_queue.lock() {
         Ok(mut task_queue) => {
-            match task_queue.pull_category_task(task_category) {
+            match task_queue.pull_category_task_from_queue(task_category) {
                 Ok(payload) => BusResponse { successful: true, error: String::new(), payload: payload },
                 Err(error) => BusResponse { successful: false, error: error, payload: String::new() }
             }

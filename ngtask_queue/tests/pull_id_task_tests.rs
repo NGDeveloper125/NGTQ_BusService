@@ -1,4 +1,5 @@
 use ngtask_queue::{IdTask, TaskQueue};
+use ngtq::NGTQ;
 
 #[test]
 fn id_not_in_queue_test_pull_id_task_from_queue() {
@@ -6,7 +7,7 @@ fn id_not_in_queue_test_pull_id_task_from_queue() {
     
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            let queue_response = task_queue.pull_id_task(String::from("test"));
+            let queue_response = task_queue.pull_id_task_from_queue(String::from("test"));
             assert_eq!(queue_response, Err(String::from("Failed to pull task from queue - task with this id was not found in queue")))
         },
         Err(error) => {
@@ -22,7 +23,7 @@ fn id_not_valid_test_pull_id_task_from_queue() {
     
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            let queue_response = task_queue.pull_id_task(String::new());
+            let queue_response = task_queue.pull_id_task_from_queue(String::new());
             assert_eq!(queue_response, Err(String::from("Failed to pull task from queue - task with this id was not found in queue")))
         },
         Err(error) => {
@@ -43,9 +44,9 @@ fn id_valid_and_exist_test_pull_id_task_from_queue() {
 
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            match task_queue.push_id_task(task) {
+            match task_queue.push_id_task_to_queue(task) {
                 Ok(_) => {
-                    match task_queue.pull_id_task(String::from("test")) {
+                    match task_queue.pull_id_task_from_queue(String::from("test")) {
                         Ok(payloud) => {
                             assert_eq!(payloud, payload);
                             assert_eq!(task_queue.get_id_queue_len().unwrap(), 0)
