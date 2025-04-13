@@ -1,21 +1,19 @@
 use std::sync::{Arc, Mutex};
 
-pub trait NGTaskQueue {
+use serde::{Deserialize, Serialize};
 
-}
-
-pub trait NGIdTask {
+pub trait NGIdTask: Serialize + for<'de> Deserialize<'de>  {
     fn get_id(&self) -> &str;
     fn get_payload(&self) -> String;
 }
 
-pub trait NGCategoryTask {
+pub trait NGCategoryTask: Serialize + for<'de> Deserialize<'de> {
     fn get_category(&self) -> &str;
     fn get_payload(&self) -> String;
 }
 
-pub trait NGTQ<T> {
-    fn initialise() -> Arc<Mutex<T>> where T: NGTaskQueue;
+pub trait NGTQ {
+    fn initialise() -> Arc<Mutex<Self>> where Self: Sized;
 
     fn get_id_queue_len(&self) -> Result<usize, String>;
 

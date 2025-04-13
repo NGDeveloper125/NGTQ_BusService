@@ -1,3 +1,5 @@
+use ngtask_queue::{CategoryTask, IdTask, TaskQueue};
+
 mod receiver;
 
 fn main() -> std::io::Result<()> {
@@ -6,7 +8,7 @@ fn main() -> std::io::Result<()> {
 
     };
 
-    match receiver_instance.start_receiver( "/tmp/resu_ipc_socket", &true) {
+    match receiver_instance.start_receiver::<TaskQueue, IdTask, CategoryTask>( "/tmp/resu_ipc_socket", &true) {
         Ok(_) => println!("Is this reachable?"),
         Err(error) => println!("Recevier failed: {}", error)
     }
