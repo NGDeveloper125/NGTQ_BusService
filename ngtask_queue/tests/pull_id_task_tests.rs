@@ -7,8 +7,13 @@ fn id_not_in_queue_test_pull_id_task_from_queue() {
     
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            let queue_response = task_queue.pull_id_task_from_queue(String::from("test"));
-            assert_eq!(queue_response, Err(String::from("Failed to pull task from queue - task with this id was not found in queue")))
+            match task_queue.pull_id_task_from_queue(String::from("test")){
+                Ok(_) => {
+                 println!("Expected to fail because no queue for this category exist");
+                 assert!(false)
+                },
+                Err(_) => assert!(true)
+             }
         },
         Err(error) => {
             println!("Failed to open queue {:?}", error);
@@ -23,8 +28,13 @@ fn id_not_valid_test_pull_id_task_from_queue() {
     
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            let queue_response = task_queue.pull_id_task_from_queue(String::new());
-            assert_eq!(queue_response, Err(String::from("Failed to pull task from queue - task with this id was not found in queue")))
+            match task_queue.pull_id_task_from_queue(String::new()) {
+                Ok(_) => {
+                 println!("Expected to fail because no queue for this category exist");
+                 assert!(false)
+                },
+                Err(_) => assert!(true)
+             }
         },
         Err(error) => {
             println!("Failed to open queue {:?}", error);

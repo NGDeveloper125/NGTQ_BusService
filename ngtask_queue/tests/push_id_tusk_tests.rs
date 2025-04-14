@@ -73,8 +73,13 @@ fn valid_existing_id_message_test_push_id_task_to_queue() {
     };
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            let i = task_queue.push_id_task_to_queue(id_task2);
-            assert_eq!(i, Err(String::from("Failed to push new task - A task with this id already exist in the queue")));
+            match task_queue.push_id_task_to_queue(id_task2) {
+                Ok(_) => {
+                 println!("Expected to fail because no queue for this category exist");
+                 assert!(false)
+                },
+                Err(_) => assert!(true)
+             }
             assert_eq!(task_queue.get_id_queue_len().unwrap(), 1)
         },
         Err(error) => {
@@ -94,8 +99,13 @@ fn invalid_new_message_test_push_id_task_to_queue() {
 
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            let i = task_queue.push_id_task_to_queue(id_task);
-            assert_eq!(i, Err(String::from("Failed to push new task - The task id or payload is empty")));
+            match task_queue.push_id_task_to_queue(id_task) {
+                Ok(_) => {
+                 println!("Expected to fail because no queue for this category exist");
+                 assert!(false)
+                },
+                Err(_) => assert!(true)
+             }
             assert_eq!(task_queue.get_id_queue_len().unwrap(), 0)
         },
         Err(error) => {

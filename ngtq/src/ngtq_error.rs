@@ -1,13 +1,17 @@
 use std::{error::Error, fmt::{self}};
 
-#[derive(Debug)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize)]
 pub enum NGTQErrorType {
-    INITIALISATION(String),
-    IDQUEUE(String),
-    CATEGORYQUEUE(String)
+    Initialisation(String),
+    IdQueue(String),
+    CategoryQueue(String),
+    Serialisation(String),
+    ServerError(String)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NGTQError {
     pub error_type: NGTQErrorType,
     pub error_description: String
@@ -22,9 +26,11 @@ impl NGTQError {
 impl fmt::Display for NGTQError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.error_type {
-            NGTQErrorType::INITIALISATION(error) => write!(f,"Initialisation Error {}", error),
-            NGTQErrorType::IDQUEUE(error) => write!(f, "Id Queue Error {}", error),
-            NGTQErrorType::CATEGORYQUEUE(error) => write!(f, "Category Queue Error {}", error),
+            NGTQErrorType::Initialisation(error) => write!(f,"Initialisation Error {}", error),
+            NGTQErrorType::IdQueue(error) => write!(f, "Id Queue Error {}", error),
+            NGTQErrorType::CategoryQueue(error) => write!(f, "Category Queue Error {}", error),
+            NGTQErrorType::Serialisation(error) => write!(f, "Serialisation Error {}", error),
+            NGTQErrorType::ServerError(error) => write!(f, "Server Unexpected error occured: {}", error)
         }
     }
 }
