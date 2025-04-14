@@ -1,5 +1,6 @@
 use std::{io::{Read, Write}, os::unix::net::UnixStream};
 pub use models::{BusRequest, BusResponse, CategoryTask, IdTask, Task, TaskIdentifier};
+use serde_json::ser;
 
 mod models;
 
@@ -102,6 +103,7 @@ fn send_request_to_bus(serialised_request: String, bus_address: &str) -> Result<
 }
 
 fn handle_bus_response(serialised_response: String) -> Result<String, String> {
+    println!("serialised_response: {}", serialised_response);
     let response: BusResponse = match serde_json::from_str(&serialised_response) {
         Ok(response) => response,
         Err(error) => {
