@@ -104,7 +104,7 @@ fn send_request_to_bus(serialised_request: String, bus_address: &str) -> Result<
 fn handle_bus_response(serialised_response: String) -> Result<String, String> {
     let response: BusResponse = serde_json::from_str(&serialised_response).unwrap();
     if response.successful {
-        return Ok(response.payload)
+        return Ok(response.payload.unwrap())
     }
-    Err(response.error)
+    Err(response.error.unwrap())
 }
