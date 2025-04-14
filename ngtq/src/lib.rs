@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
-
 use serde::{Deserialize, Serialize};
+mod ngtq_error;
 
 pub trait NGIdTask: Serialize + for<'de> Deserialize<'de>  {
     fn get_id(&self) -> &str;
