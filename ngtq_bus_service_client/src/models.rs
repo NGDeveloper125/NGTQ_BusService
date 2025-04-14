@@ -1,5 +1,4 @@
 
-
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -12,8 +11,7 @@ pub enum BusRequest {
 #[derive(Debug, Serialize, Deserialize)]
 pub enum TaskIdentifier {
     Id(String),
-    Category(String),
-    Error(String)
+    Category(String)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -37,8 +35,8 @@ pub enum Task {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BusResponse {
     pub successful: bool, 
-    pub error: Option<String>, 
-    pub payload: Option<String>
+    pub error: String,
+    pub payload: String
 }
 
 impl IdTask {

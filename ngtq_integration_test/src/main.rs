@@ -18,8 +18,10 @@ pub fn start_bus() -> Child {
 mod tests {
     use super::*;
     use ngtq_bus_service_client::{self, BusServiceClient, CategoryTask, IdTask};
+    use serial_test::serial;
 
     #[test]
+    #[serial]
     fn ngtq_bus_server_client_lib_test_id_task() {
 
         let mut bus_service = start_bus();
@@ -32,7 +34,7 @@ mod tests {
         };
 
         match bus_service_client.send_id_task_to_bus(id_task) {
-            Ok(_) => (),
+            Ok(s) => println!("printing serialise response: {}", s),
             Err(error) => {
                 println!("Failed test: {}", error);
                 assert!(false)
@@ -53,6 +55,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn ngtq_bus_server_client_lib_test_category_task() {
 
         let mut bus_service = start_bus();

@@ -102,9 +102,18 @@ fn send_request_to_bus(serialised_request: String, bus_address: &str) -> Result<
 }
 
 fn handle_bus_response(serialised_response: String) -> Result<String, String> {
-    let response: BusResponse = serde_json::from_str(&serialised_response).unwrap();
+    let response: BusResponse = match serde_json::from_str(&serialised_response) {
+        Ok(response) => response,
+        Err(error) => {
+            BusResponse {
+                successful: false,
+                error: format!("Failed to deserialise response from bus {}", error.to_string()),
+                payload: String::new()
+            }
+        }
+    };
     if response.successful {
-        return Ok(response.payload.unwrap())
+        return Ok(response.payload)
     }
-    Err(response.error.unwrap())
+    Err(response.error)
 }
