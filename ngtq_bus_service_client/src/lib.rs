@@ -109,13 +109,16 @@ fn handle_bus_response(serialised_response: String) -> Result<String, String> {
         Err(error) => {
             BusResponse {
                 successful: false,
-                error: format!("Failed to deserialise response from bus {}", error.to_string()),
-                payload: String::new()
+                error: Some(format!("Failed to deserialise response from bus {}", error.to_string())),
+                payload: None
             }
         }
     };
     if response.successful {
-        return Ok(response.payload)
+        return match response.payload {
+            Some(payload) => Ok(payload),
+            None => Err("Failed to find payload".to_string())
+        }
     }
-    Err(response.error)
+    Err(response.error.unwrap())
 }
