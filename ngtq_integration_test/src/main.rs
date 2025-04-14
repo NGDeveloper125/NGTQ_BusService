@@ -9,7 +9,7 @@ pub fn start_bus() -> Child {
     let child = Command::new("../ngtq_bus_service/target/debug/ngtq_bus_service")
                                   .spawn()
                                   .expect("Failed to start bus service");
-    thread::sleep(Duration::from_secs(1));
+    thread::sleep(Duration::from_secs(2));
 
     child
 }
