@@ -4,12 +4,12 @@ pub use ngtq_error::{ NGTQError, NGTQErrorType };
 mod ngtq_error;
 
 pub trait NGId: Serialize + for<'de> Deserialize<'de> {
-    fn set(input: String) -> Self;
+    fn set_with_validation(input: String) -> Result<Self, NGTQError>;
     fn get(&self) -> Option<String>;
 }
 
 pub trait NGIdTask: Serialize + for<'de> Deserialize<'de>  {
-    fn get_id(&self) -> &str;
+    fn get_id<T: NGId>(&self) -> Option<String>;
     fn get_payload(&self) -> String;
 }
 
@@ -25,7 +25,7 @@ pub trait NGTQ {
 
     fn get_category_queue_len(&self, category: &str) -> Result<usize, NGTQError>;
 
-    fn push_id_task_to_queue<A>(&mut self, task: A) -> Result<(), NGTQError> where A: NGIdTask;
+    fn push_id_task_to_queue<A, B>(&mut self, task: A) -> Result<(), NGTQError> where A: NGIdTask, B: NGId;
 
     fn push_category_task_to_queue<B>(&mut self, task: B) -> Result<(), NGTQError> where B: NGCategoryTask;
 

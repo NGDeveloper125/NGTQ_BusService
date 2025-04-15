@@ -1,43 +1,12 @@
 use std::{collections::HashMap, sync::{Arc, Mutex}};
-use ngtq::{ NGCategoryTask, NGIdTask, NGTQError, NGTQ };
-use serde::{Deserialize, Serialize};
+use ngtq::{ NGCategoryTask, NGId, NGIdTask, NGTQError, NGTQ };
+pub use task::{ Id, IdTask, CategoryTask};
 
+mod task;
 pub struct TaskQueue {
     pub is_initialised: bool,
     pub id_queue: HashMap<String, String>,
     pub category_queues: HashMap<String, Vec<String>>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct IdTask {
-    pub id: String,
-    pub payload: String,
-}
-
-impl NGIdTask for IdTask {
-    fn get_id(&self) -> &str {
-        &self.id
-    }
-    
-    fn get_payload(&self) -> String {
-        self.payload.to_string()
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct CategoryTask {
-    pub category: String,
-    pub payload: String,
-}
-
-impl NGCategoryTask for CategoryTask {  
-    fn get_category(&self) -> &str {
-        &self.category
-    }
-    
-    fn get_payload(&self) -> String {
-        self.payload.to_string()
-    }
 }
 
 impl NGTQ for TaskQueue {
@@ -81,7 +50,7 @@ impl NGTQ for TaskQueue {
 
 
 
-    fn push_id_task_to_queue<T: NGIdTask>(&mut self, task: T) -> Result<(), NGTQError> {
+    fn push_id_task_to_queue<T: NGIdTask, TaskId: NGId>(&mut self, task: T) -> Result<(), NGTQError> {
         if !self.is_initialised {
             return Err(
                 NGTQError::generate_error(
@@ -90,14 +59,25 @@ impl NGTQ for TaskQueue {
                 )
             )
         }
-        if task.get_id() == String::new() || task.get_payload() == String::new() {
+
+        let task_id = match task.get_id::<TaskId>() {
+            Some(id) => id,
+            None => return Err(
+                NGTQError::generate_error(
+                    ngtq::NGTQErrorType::IdQueue(String::from("The task id object was empty")), 
+                    String::from("Task need to have a valid id")
+                )
+            )
+        };
+        
+        if task.get_payload() == String::new() {
             return Err(
                 NGTQError::generate_error(
                     ngtq::NGTQErrorType::IdQueue(String::from("The task id or payload is empty")), 
                     String::from("Failed to push new task")
                 )
             )
-        } else if self.id_queue.contains_key(task.get_id()) {
+        } else if self.id_queue.contains_key(&task_id) {
             return Err(
                 NGTQError::generate_error(
                     ngtq::NGTQErrorType::IdQueue(String::from("A task with this id already exist in the queue")),
@@ -105,7 +85,7 @@ impl NGTQ for TaskQueue {
                 )
             )    
         } else {
-            return match self.id_queue.insert(task.get_id().to_string(), task.get_payload()) {
+            return match self.id_queue.insert(task_id, task.get_payload()) {
                 Some(_) => return Err(
                     NGTQError::generate_error(
                         ngtq::NGTQErrorType::IdQueue(String::from("A task with this id exist in the queuea")),
@@ -219,15 +199,23 @@ mod tests {
     #[test]
     fn id_queue_len() {
         let task_queue_arc = TaskQueue::initialise();
+        let id = match Id::set_with_validation(String::from("1234567890")) {
+            Ok(valid_id) => Some(valid_id),
+            Err(error) => {
+                println!("Test Failed: failed to create task id: {}", error);
+                assert!(false);
+                None
+            }
+        };
         let task = IdTask {
-            id: String::from("test"),
+            id: id,
             payload: String::from("Do Somthing")
         };
 
         match task_queue_arc.lock() {
             Ok(mut task_queue) => {
                 assert_eq!(task_queue.get_id_queue_len().unwrap(), 0);
-                match task_queue.push_id_task_to_queue(task) {
+                match task_queue.push_id_task_to_queue::<IdTask, Id>(task) {
                     Ok(_) => assert_eq!(task_queue.get_id_queue_len().unwrap(), 1),
                     Err(error) => {
                         println!("{}", error);

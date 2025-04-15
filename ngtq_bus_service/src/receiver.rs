@@ -1,6 +1,6 @@
 
 use std::{io::{Read, Write}, os::unix::net::{UnixListener, UnixStream}, sync::{mpsc::{self, Sender}, Arc, Mutex}, thread};
-use ngtq::{NGCategoryTask, NGIdTask, NGTQError, NGTQ};
+use ngtq::{NGCategoryTask, NGId, NGIdTask, NGTQError, NGTQ};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -35,7 +35,7 @@ pub struct Receiver {
 }
 
 impl Receiver  {
-    pub fn start_receiver<T: NGTQ, IdTask: NGIdTask, CategoryTask: NGCategoryTask>(&self, socket_path: &str, keep_running: &bool) -> Result<(), String> {
+    pub fn start_receiver<T: NGTQ, IdTask: NGIdTask, CategoryTask: NGCategoryTask, Id: NGId>(&self, socket_path: &str, keep_running: &bool) -> Result<(), String> {
         let wrapped_task_queue = T::initialise();
         let (tx, rx): (mpsc::Sender<UnixStream>, mpsc::Receiver<UnixStream>) = mpsc::channel();
 
@@ -48,7 +48,7 @@ impl Receiver  {
                     match stream.read(&mut buffer) {
                         Ok(bytes) => {
                             let incoming_request = String::from_utf8_lossy(&buffer[..bytes]);
-                            let response = handle_incoming_request::<T, IdTask, CategoryTask>(incoming_request.to_string(), &wrapped_task_queue);
+                            let response = handle_incoming_request::<T, IdTask, CategoryTask, Id>(incoming_request.to_string(), &wrapped_task_queue);
                             match serde_json::to_string(&response) {
                                 Ok(serialised_response ) => {
                                     match stream.write_all(serialised_response.as_bytes()) {
@@ -94,7 +94,7 @@ fn start_receiving(socket_path: String, tx: Sender<UnixStream>) {
     });
 }
 
-fn handle_incoming_request<T: NGTQ, IdTask: NGIdTask, CategoryTask: NGCategoryTask>(incoming_request: String, wrapped_task_queue: &Arc<Mutex<T>>) -> BusResponse {
+fn handle_incoming_request<T: NGTQ, IdTask: NGIdTask, CategoryTask: NGCategoryTask, Id: NGId>(incoming_request: String, wrapped_task_queue: &Arc<Mutex<T>>) -> BusResponse {
     let deserialized_request: BusRequest<IdTask, CategoryTask> = match serde_json::from_str(&incoming_request) {
         Ok(incoming_request) => incoming_request,
         Err(error) => return BusResponse 
@@ -108,14 +108,14 @@ fn handle_incoming_request<T: NGTQ, IdTask: NGIdTask, CategoryTask: NGCategoryTa
     };
 
     match deserialized_request {
-        BusRequest::PushTask(task) => handle_push_request(task, wrapped_task_queue),
+        BusRequest::PushTask(task) => handle_push_request::<T, IdTask, CategoryTask, Id>(task, wrapped_task_queue),
         BusRequest::PullTask(task_identifier) => handle_pull_request(task_identifier, wrapped_task_queue),
     }
 }
 
-fn handle_push_request<T: NGTQ, IdTask: NGIdTask, CategoryTask: NGCategoryTask>(task: Task<IdTask, CategoryTask>, wrapped_task_queue: &Arc<Mutex<T>>) -> BusResponse {
+fn handle_push_request<T: NGTQ, IdTask: NGIdTask, CategoryTask: NGCategoryTask, Id: NGId>(task: Task<IdTask, CategoryTask>, wrapped_task_queue: &Arc<Mutex<T>>) -> BusResponse {
     match task {
-        Task::Id(id_task) => handle_id_task_push_request(id_task, wrapped_task_queue),
+        Task::Id(id_task) => handle_id_task_push_request::<T, IdTask, Id>(id_task, wrapped_task_queue),
         Task::Category(category_task) => handle_category_task_push_request(category_task, wrapped_task_queue)
     }
 }
@@ -127,10 +127,10 @@ fn handle_pull_request<T: NGTQ>(task_identifier: TaskIdentifier, wrapped_task_qu
     }
 }
 
-fn handle_id_task_push_request<T: NGTQ, IdTask: NGIdTask>(task: IdTask, wrapped_task_queue: &Arc<Mutex<T>>) -> BusResponse {
+fn handle_id_task_push_request<T: NGTQ, IdTask: NGIdTask, Id: NGId>(task: IdTask, wrapped_task_queue: &Arc<Mutex<T>>) -> BusResponse {
     match wrapped_task_queue.lock() {
         Ok(mut task_queue) => {
-            match task_queue.push_id_task_to_queue(task) {
+            match task_queue.push_id_task_to_queue::<IdTask, Id>(task) {
                 Ok(_) => BusResponse { successful: true, error: None, payload: None },
                 Err(error) => BusResponse { successful: false, error: Some(error), payload: None }
             }
