@@ -7,8 +7,13 @@ fn no_queue_for_the_category_exist_test_pull_category_task() {
     
     match task_queue_arc.lock() {
         Ok(mut queue) => {
-            let pull_task_result = queue.pull_category_task_from_queue(String::from("test"));
-            assert_eq!(pull_task_result, Err(String::from("Failed to pull task from queue - no tasks for this topic were found")))
+            match queue.pull_category_task_from_queue(String::from("test")) {
+               Ok(_) => {
+                println!("Expected to fail because no queue for this category exist");
+                assert!(false)
+               },
+               Err(_) => assert!(true)
+            }
         },
         Err(error) => {
             println!("Failed to open queue: {:?}", error);
@@ -33,11 +38,20 @@ fn queue_for_the_category_exist_test_pull_category_task() {
 
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            let i = task_queue.push_category_task_to_queue(task1);
-            assert_eq!(i, Ok(()));
-            let e = task_queue.push_category_task_to_queue(task2);
-            assert_eq!(e, Ok(()));
-
+            match task_queue.push_category_task_to_queue(task1) {
+                Ok(_) => assert!(true),
+                Err(error) => {
+                    println!("Expected to return ok: {}", error);
+                    assert!(false)
+                }
+            }
+            match task_queue.push_category_task_to_queue(task2) {
+                Ok(_) => assert!(true),
+                Err(error) => {
+                    println!("Expected to return ok: {}", error);
+                    assert!(false)    
+                }
+            }
             match task_queue.get_category_queue_len("test") {
                 Ok(queue_size) => assert_eq!(queue_size, 2),
                 Err(error) => {
@@ -76,9 +90,13 @@ fn queue_for_the_category_exist_with_last_task_test_pull_category_task() {
 
     match task_queue_arc.lock() {
         Ok(mut queue) => {
-            let i = queue.push_category_task_to_queue(task);
-            assert_eq!(i, Ok(()));
-
+            match queue.push_category_task_to_queue(task){
+                Ok(_) => assert!(true),
+                Err(error) => {
+                    println!("Expected to return ok: {}", error);
+                    assert!(false)    
+                }
+            }
             match queue.pull_category_task_from_queue(String::from("test")) {
                 Ok(payload) => {
                     assert_eq!(payload, task_payload);

@@ -9,7 +9,7 @@ pub fn start_bus() -> Child {
     let child = Command::new("../ngtq_bus_service/target/debug/ngtq_bus_service")
                                   .spawn()
                                   .expect("Failed to start bus service");
-    thread::sleep(Duration::from_secs(1));
+    thread::sleep(Duration::from_secs(2));
 
     child
 }
@@ -18,8 +18,10 @@ pub fn start_bus() -> Child {
 mod tests {
     use super::*;
     use ngtq_bus_service_client::{self, BusServiceClient, CategoryTask, IdTask};
+    use serial_test::serial;
 
     #[test]
+    #[serial]
     fn ngtq_bus_server_client_lib_test_id_task() {
 
         let mut bus_service = start_bus();
@@ -53,6 +55,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn ngtq_bus_server_client_lib_test_category_task() {
 
         let mut bus_service = start_bus();

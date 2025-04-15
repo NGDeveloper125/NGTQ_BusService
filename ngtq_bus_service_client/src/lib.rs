@@ -1,6 +1,5 @@
 use std::{io::{Read, Write}, os::unix::net::UnixStream};
 pub use models::{BusRequest, BusResponse, CategoryTask, IdTask, Task, TaskIdentifier};
-
 mod models;
 
 pub struct BusServiceClient {
@@ -13,7 +12,7 @@ impl BusServiceClient {
         BusServiceClient { is_initialise: true, bus_address: bus_address }
     }
 
-    pub fn send_id_task_to_bus(&self, id_task: IdTask) -> Result<String, String> {
+    pub fn send_id_task_to_bus(&self, id_task: IdTask) -> Result<Option<String>, String> {
         if !self.is_initialise {
             return Err(String::from("Failed to send task - BusServiceClient is not initilised!"))
         }
@@ -31,7 +30,7 @@ impl BusServiceClient {
         }
     }
 
-    pub fn send_category_task_to_bus(&self, category_task: CategoryTask) -> Result<String, String> {
+    pub fn send_category_task_to_bus(&self, category_task: CategoryTask) -> Result<Option<String>, String> {
         if !self.is_initialise {
             return Err(String::from("Failed to send task - BusServiceClient is not initilised"));
         }
@@ -48,7 +47,7 @@ impl BusServiceClient {
         }
     }
 
-    pub fn pull_id_task_from_bus(&self, id: String) -> Result<String, String> {
+    pub fn pull_id_task_from_bus(&self, id: String) -> Result<Option<String>, String> {
         if !self.is_initialise {
             return Err(String::from("Failed to pull task - BusServiceClient is not initilised"));
         }
@@ -64,7 +63,7 @@ impl BusServiceClient {
         }
     }
 
-    pub fn pull_category_task_from_bus(&self, category: String) -> Result<String, String> {
+    pub fn pull_category_task_from_bus(&self, category: String) -> Result<Option<String>, String> {
         if !self.is_initialise {
             return Err(String::from("Failed to pull task - BusServiceClient is not initilised"));
         }
@@ -101,10 +100,20 @@ fn send_request_to_bus(serialised_request: String, bus_address: &str) -> Result<
     }
 }
 
-fn handle_bus_response(serialised_response: String) -> Result<String, String> {
-    let response: BusResponse = serde_json::from_str(&serialised_response).unwrap();
+fn handle_bus_response(serialised_response: String) -> Result<Option<String>, String> {
+    println!("serialised_response: {}", serialised_response);
+    let response: BusResponse = match serde_json::from_str(&serialised_response) {
+        Ok(response) => response,
+        Err(error) => {
+            BusResponse {
+                successful: false,
+                error: Some(format!("Failed to deserialise response from bus {}", error.to_string())),
+                payload: None
+            }
+        }
+    };
     if response.successful {
         return Ok(response.payload)
     }
-    Err(response.error)
+    Err(response.error.unwrap())
 }
