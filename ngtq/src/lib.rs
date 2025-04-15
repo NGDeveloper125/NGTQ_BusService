@@ -3,6 +3,11 @@ use serde::{Deserialize, Serialize};
 pub use ngtq_error::{ NGTQError, NGTQErrorType };
 mod ngtq_error;
 
+pub trait NGId: Serialize + for<'de> Deserialize<'de> {
+    fn set(input: String) -> Self;
+    fn get(&self) -> Option<String>;
+}
+
 pub trait NGIdTask: Serialize + for<'de> Deserialize<'de>  {
     fn get_id(&self) -> &str;
     fn get_payload(&self) -> String;
