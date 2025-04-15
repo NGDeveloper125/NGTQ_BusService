@@ -34,7 +34,7 @@ mod tests {
         };
 
         match bus_service_client.send_id_task_to_bus(id_task) {
-            Ok(s) => println!("printing serialise response: {}", s),
+            Ok(_) => (),
             Err(error) => {
                 println!("Failed test: {}", error);
                 assert!(false)
