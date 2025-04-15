@@ -116,11 +116,9 @@ fn valid_existing_id_message_test_push_id_task_to_queue() {
 #[test]
 fn invalid_new_message_test_push_id_task_to_queue() {
     let task_queue_arc = TaskQueue::initialise();
-    let id = match Id::set_with_validation(String::from("1234567890")) {
+    let id = match Id::set_with_validation(String::from("1234")) {
         Ok(valid_id) => Some(valid_id),
         Err(error) => {
-            println!("Test Failed: failed to create task id: {}", error);
-            assert!(false);
             None
         }
     };
@@ -132,7 +130,7 @@ fn invalid_new_message_test_push_id_task_to_queue() {
         Ok(mut task_queue) => {
             match task_queue.push_id_task_to_queue::<IdTask, Id>(task) {
                 Ok(_) => {
-                 println!("Expected to fail because no queue for this category exist");
+                 println!("Expected to fail because no id is invalid");
                  assert!(false)
                 },
                 Err(_) => assert!(true)
