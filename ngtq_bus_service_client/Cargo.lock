@@ -27,6 +27,15 @@ name = "ngtq_bus_service_client"
 version = "0.1.0"
 dependencies = [
  "ngtq",
+ "ngtq_bus_service_models",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "ngtq_bus_service_models"
+version = "0.1.0"
+dependencies = [
  "serde",
  "serde_json",
 ]

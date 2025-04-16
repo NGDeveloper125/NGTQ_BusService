@@ -1,18 +1,14 @@
-use ngtask_queue::{CategoryTask, TaskQueue};
+use ngtask_queue::TaskQueue;
 use ngtq::NGTQ;
 
 
 #[test]
 fn valid_new_message_test_push_new_category_task_to_queue() {
     let task_queue_arc = TaskQueue::initialise();
-    let task = CategoryTask {
-        category: String::from("test"),
-        payload: String::from("Do this and that")
-    };
 
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            match task_queue.push_category_task_to_queue(task) {
+            match task_queue.push_category_task_to_queue(String::from("test"), String::from("Do this and that")) {
                 Ok(()) => {
                     match task_queue.get_category_queue_len("test") {
                         Ok(queue_size) => {
@@ -41,14 +37,10 @@ fn valid_new_message_test_push_new_category_task_to_queue() {
 #[test]
 fn valid_new_message_test_push_existing_category_task_to_queue() {
     let task_queue_arc = TaskQueue::initialise();
-    let task = CategoryTask {
-        category: String::from("test"),
-        payload: String::from("Do this and that")
-    };
 
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            match task_queue.push_category_task_to_queue(task) {
+            match task_queue.push_category_task_to_queue(String::from("test"), String::from("Do this and that")) {
                 Ok(()) => {
                     match task_queue.get_category_queue_len("test") {
                         Ok(queue_size) => {
@@ -73,14 +65,9 @@ fn valid_new_message_test_push_existing_category_task_to_queue() {
         }
     };
 
-    let task = CategoryTask {
-        category: String::from("test"),
-        payload: String::from("Do this and that")
-    };
-
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            match task_queue.push_category_task_to_queue(task) {
+            match task_queue.push_category_task_to_queue(String::from("test"), String::from("Do this and that")) {
                 Ok(()) => {
                     match task_queue.get_category_queue_len("test") {
                         Ok(queue_size) => {
@@ -109,14 +96,10 @@ fn valid_new_message_test_push_existing_category_task_to_queue() {
 #[test]
 fn invalid_category_new_message_test_push_category_task_to_queue() {
     let task_queue_arc = TaskQueue::initialise();
-    let task = CategoryTask {
-        category: String::new(),
-        payload: String::from("Do this and that")
-    };
 
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            match task_queue.push_category_task_to_queue(task) {
+            match task_queue.push_category_task_to_queue(String::new(), String::from("Do this and that")) {
                 Ok(_) => {
                     println!("Expected an error");
                     assert!(false)
@@ -134,14 +117,10 @@ fn invalid_category_new_message_test_push_category_task_to_queue() {
 #[test]
 fn invalid_payload_new_message_test_push_category_task_to_queue() {
     let task_queue_arc = TaskQueue::initialise();
-    let task = CategoryTask {
-        category: String::from("test"),
-        payload: String::new()
-    };
 
     match task_queue_arc.lock() {
         Ok(mut task_queue) => {
-            match task_queue.push_category_task_to_queue(task) {
+            match task_queue.push_category_task_to_queue(String::from("test"), String::new()) {
                 Ok(_) => {
                     println!("Expected an error");
                     assert!(false)

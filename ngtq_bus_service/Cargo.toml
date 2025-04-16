@@ -4,7 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-ngtask_queue = { path = "../ngtask_queue" }
 ngtq = { path = "../ngtq" }
+ngtask_queue = { path = "../ngtask_queue" }
+ngtq_bus_service_models = { path = "../ngtq_bus_service_models" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

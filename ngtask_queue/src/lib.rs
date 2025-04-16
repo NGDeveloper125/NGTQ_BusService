@@ -1,8 +1,7 @@
-use std::{collections::HashMap, sync::{Arc, Mutex}};
-use ngtq::{ NGCategoryTask, NGId, NGIdTask, NGTQError, NGTQ };
-pub use task::{ Id, IdTask, CategoryTask};
+use std::{collections::HashMap, sync::{atomic::{AtomicUsize, Ordering}, Arc, Mutex}};
+use ngtq::{ NGTQError, NGTQ };
 
-mod task;
+static IDCOUNTER: AtomicUsize = AtomicUsize::new(0);
 pub struct TaskQueue {
     pub is_initialised: bool,
     pub id_queue: HashMap<String, String>,
@@ -50,7 +49,7 @@ impl NGTQ for TaskQueue {
 
 
 
-    fn push_id_task_to_queue<T: NGIdTask, TaskId: NGId>(&mut self, task: T) -> Result<(), NGTQError> {
+    fn push_id_task_to_queue(&mut self, payload: String) -> Result<String, NGTQError> {
         if !self.is_initialised {
             return Err(
                 NGTQError::generate_error(
@@ -60,44 +59,29 @@ impl NGTQ for TaskQueue {
             )
         }
 
-        let task_id = match task.get_id::<TaskId>() {
-            Some(id) => id,
-            None => return Err(
-                NGTQError::generate_error(
-                    ngtq::NGTQErrorType::IdQueue(String::from("The task id object was empty")), 
-                    String::from("Task need to have a valid id")
-                )
-            )
-        };
+        let id = generate_id();
         
-        if task.get_payload() == String::new() {
+        if payload == String::new() {
             return Err(
                 NGTQError::generate_error(
-                    ngtq::NGTQErrorType::IdQueue(String::from("The task id or payload is empty")), 
+                    ngtq::NGTQErrorType::IdQueue(String::from("The task payload is empty")), 
                     String::from("Failed to push new task")
                 )
             )
-        } else if self.id_queue.contains_key(&task_id) {
-            return Err(
-                NGTQError::generate_error(
-                    ngtq::NGTQErrorType::IdQueue(String::from("A task with this id already exist in the queue")),
-                    String::from("Failed to push new task")
-                )
-            )    
         } else {
-            return match self.id_queue.insert(task_id, task.get_payload()) {
+            return match self.id_queue.insert(id.to_string(), payload) {
                 Some(_) => return Err(
                     NGTQError::generate_error(
-                        ngtq::NGTQErrorType::IdQueue(String::from("A task with this id exist in the queuea")),
+                        ngtq::NGTQErrorType::IdQueue(String::from("A task with this id exist in the queue")),
                         String::from("Fatal Error")
                     )
                 ), 
-                None => Ok(())
+                None => Ok(id)
             }
         }
     }
     
-    fn push_category_task_to_queue<T: NGCategoryTask>(&mut self, task: T) -> Result<(), NGTQError> {
+    fn push_category_task_to_queue(&mut self, category: String, payload: String) -> Result<(), NGTQError> {
         if !self.is_initialised {
             return Err(
                 NGTQError::generate_error(
@@ -106,29 +90,29 @@ impl NGTQ for TaskQueue {
                 )
             )
         }
-        if task.get_category() == String::new() || task.get_payload() == String::new() {
+        if category == String::new() || payload == String::new() {
             return Err(
                 NGTQError::generate_error(
-                    ngtq::NGTQErrorType::CategoryQueue(String::from("The task topic or payload is empty")),
+                    ngtq::NGTQErrorType::CategoryQueue(String::from("The task category or payload is empty")),
                     String::from("Failed to push new task")
                 )
             )
         } 
-        match self.category_queues.get_mut(task.get_category()) {
+        match self.category_queues.get_mut(&category) {
             Some(queue) => {
-                push_category_task_to_existing_queue(queue, task);
+                push_category_task_to_existing_queue(queue, payload);
                 return Ok(())
             },
             None => {
                 let mut new_queue = Vec::new();
-                new_queue.push(task.get_payload());
-                self.category_queues.insert(task.get_category().to_string(), new_queue);
+                new_queue.push(payload);
+                self.category_queues.insert(category, new_queue);
                 return Ok(());
             }
         }
     }
     
-    fn pull_id_task_from_queue(&mut self, id: String) -> Result<String, NGTQError> {
+    fn pull_id_task_from_queue(&mut self, id: &str) -> Result<String, NGTQError> {
         if !self.is_initialised {
             return Err(
                 NGTQError::generate_error(
@@ -137,7 +121,7 @@ impl NGTQ for TaskQueue {
                 )
             )
         }
-        match self.id_queue.remove(&id) {
+        match self.id_queue.remove(id) {
             Some(payload) => Ok(payload),
             None => Err(
                 NGTQError::generate_error(
@@ -148,7 +132,7 @@ impl NGTQ for TaskQueue {
         }
     }
     
-    fn pull_category_task_from_queue(&mut self, category: String) -> Result<String, NGTQError> {
+    fn pull_category_task_from_queue(&mut self, category: &str) -> Result<String, NGTQError> {
         if !self.is_initialised {
             return Err(
                 NGTQError::generate_error(
@@ -157,7 +141,7 @@ impl NGTQ for TaskQueue {
                 )
             )
         }
-        match self.category_queues.remove(&category) {
+        match self.category_queues.remove(category) {
             Some(mut queue) => {
                 if queue.len() > 1 {
                     let payload = queue.remove(0);
@@ -177,9 +161,13 @@ impl NGTQ for TaskQueue {
     }
 }
 
-fn push_category_task_to_existing_queue<T: NGCategoryTask>(queue: &mut Vec<String>, task: T) -> usize {
-    queue.push(task.get_payload());
+fn push_category_task_to_existing_queue(queue: &mut Vec<String>, payload: String) -> usize {
+    queue.push(payload);
     queue.len()
+}
+
+fn generate_id() -> String {
+    IDCOUNTER.fetch_add(1, Ordering::SeqCst).to_string()
 }
 
 #[cfg(test)]
@@ -199,23 +187,11 @@ mod tests {
     #[test]
     fn id_queue_len() {
         let task_queue_arc = TaskQueue::initialise();
-        let id = match Id::set_with_validation(String::from("1234567890")) {
-            Ok(valid_id) => Some(valid_id),
-            Err(error) => {
-                println!("Test Failed: failed to create task id: {}", error);
-                assert!(false);
-                None
-            }
-        };
-        let task = IdTask {
-            id: id,
-            payload: String::from("Do Somthing")
-        };
 
         match task_queue_arc.lock() {
             Ok(mut task_queue) => {
                 assert_eq!(task_queue.get_id_queue_len().unwrap(), 0);
-                match task_queue.push_id_task_to_queue::<IdTask, Id>(task) {
+                match task_queue.push_id_task_to_queue(String::from("Do Somthing")) {
                     Ok(_) => assert_eq!(task_queue.get_id_queue_len().unwrap(), 1),
                     Err(error) => {
                         println!("{}", error);
@@ -234,23 +210,25 @@ mod tests {
     #[test]
     fn category_queue_len() {
         let task_queue_arc = TaskQueue::initialise();
-        let category = String::from("test");
-        let task = CategoryTask {
-            category: category.to_string(),
-            payload: String::from("Do Somthing")
-        };
 
         match task_queue_arc.lock() {
             Ok(mut task_queue) => {
-                task_queue.push_category_task_to_queue(task).expect("Failed to push task to queue");
-                match task_queue.get_category_queue_len("test") {
-                    Ok(queue_size) => assert_eq!(queue_size, 1),
+                match task_queue.push_category_task_to_queue(String::from("test"), String::from("Do Somthing")) {
+                    Ok(_) => {
+                        match task_queue.get_category_queue_len("test") {
+                            Ok(queue_size) => assert_eq!(queue_size, 1),
+                            Err(error) => {
+                                println!("{}", error);
+                                assert!(false)
+                            }
+                        }
+                    },
                     Err(error) => {
-                        println!("{}", error);
+                        println!("Failed to push task to queue: {}", error);
                         assert!(false)
                     }
-                }
-            },
+                };
+            }
             Err(error) => {
                 println!("Failed to open queue: {}", error);
                 assert!(false)
