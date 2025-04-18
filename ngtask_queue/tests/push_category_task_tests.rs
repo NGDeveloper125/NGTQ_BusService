@@ -16,19 +16,19 @@ fn valid_new_message_test_push_new_category_task_to_queue() {
                             assert_eq!(queue_size, 1);
                         },
                         Err(error) => {
-                            println!("Failed to get queue length: {}", error);
+                            println!("Test Failed - failed to get queue length: {}", error);
                             assert!(false)
                         }        
                     }
                 },
                 Err(error) => {
-                    println!("{}", error);
+                    println!("Test Failed - {}", error);
                     assert!(false)
                 }
             }
         },
         Err(error) => {
-            println!("Failed to open queue: {:?}", error);
+            println!("Test Failed - failed to open queue: {:?}", error);
             assert!(false)
         }
     };
@@ -48,19 +48,19 @@ fn valid_new_message_test_push_existing_category_task_to_queue() {
                             assert_eq!(queue_size, 1);
                         },
                         Err(error) => {
-                            println!("Failed to get queue length: {}", error);
+                            println!("Test Failed - failed to get queue length: {}", error);
                             assert!(false)
                         }        
                     }      
                 },
                 Err(error) => {
-                    println!("{}", error);
+                    println!("Test Failed - {}", error);
                     assert!(false)
                 }
             }
         },
         Err(error) => {
-            println!("Failed to open queue: {:?}", error);
+            println!("Test Failed - failed to open queue: {:?}", error);
             assert!(false)
         }
     };
@@ -75,19 +75,19 @@ fn valid_new_message_test_push_existing_category_task_to_queue() {
                             assert_eq!(queue_size, 2);
                         },
                         Err(error) => {
-                            println!("Failed to get queue length: {}", error);
+                            println!("Test Failed - failed to get queue length: {}", error);
                             assert!(false)
                         }        
                     }    
                 },
                 Err(error) => {
-                    println!("{}", error);
+                    println!("Test Failed - {}", error);
                     assert!(false)
                 }
             }
         },
         Err(error) => {
-            println!("Failed to open queue: {:?}", error);
+            println!("Test Failed - failed to open queue: {:?}", error);
             assert!(false)
         }
     };
@@ -101,14 +101,14 @@ fn invalid_category_new_message_test_push_category_task_to_queue() {
         Ok(mut task_queue) => {
             match task_queue.push_category_task_to_queue(String::new(), String::from("Do this and that")) {
                 Ok(_) => {
-                    println!("Expected an error");
+                    println!("Test Failed - expected an error");
                     assert!(false)
                 },
                 Err(_) => assert!(true)
             }
         },
         Err(error) => {
-            println!("Failed to open queue: {:?}", error);
+            println!("Test Failed - failed to open queue: {:?}", error);
             assert!(false)
         }
     };
@@ -122,14 +122,14 @@ fn invalid_payload_new_message_test_push_category_task_to_queue() {
         Ok(mut task_queue) => {
             match task_queue.push_category_task_to_queue(String::from("test"), String::new()) {
                 Ok(_) => {
-                    println!("Expected an error");
+                    println!("Test Failed - expected an error");
                     assert!(false)
                 },
                 Err(_) => assert!(true)
             }
         },
         Err(error) => {
-            println!("Failed to open queue: {:?}", error);
+            println!("Test Failed - failed to open queue: {:?}", error);
             assert!(false)
         }
     };

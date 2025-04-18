@@ -9,14 +9,14 @@ fn no_queue_for_the_category_exist_test_pull_category_task() {
         Ok(mut queue) => {
             match queue.pull_category_task_from_queue("test") {
                Ok(_) => {
-                println!("Expected to fail because no queue for this category exist");
+                println!("Test Failed - expected to fail for no queue for this category exist");
                 assert!(false)
                },
                Err(_) => assert!(true)
             }
         },
         Err(error) => {
-            println!("Failed to open queue: {:?}", error);
+            println!("Test Failed - failed to open queue: {:?}", error);
             assert!(false)
         }
     };
@@ -32,21 +32,21 @@ fn queue_for_the_category_exist_test_pull_category_task() {
             match task_queue.push_category_task_to_queue(String::from("test"), task_payload.to_string()) {
                 Ok(_) => assert!(true),
                 Err(error) => {
-                    println!("Expected to return ok: {}", error);
+                    println!("Test Failed - expected to return ok: {}", error);
                     assert!(false)
                 }
             }
             match task_queue.push_category_task_to_queue(String::from("test"), task_payload.to_string()) {
                 Ok(_) => assert!(true),
                 Err(error) => {
-                    println!("Expected to return ok: {}", error);
+                    println!("Test Failed - expected to return ok: {}", error);
                     assert!(false)    
                 }
             }
             match task_queue.get_category_queue_len("test") {
                 Ok(queue_size) => assert_eq!(queue_size, 2),
                 Err(error) => {
-                    println!("Failed to get queue length: {}", error);
+                    println!("Test Failed - failed to get queue length: {}", error);
                     assert!(false)
                 }
             }
@@ -64,7 +64,7 @@ fn queue_for_the_category_exist_test_pull_category_task() {
             assert_eq!(task_queue.get_category_queue_len("test").unwrap(), 1)
         },
         Err(error) => {
-            println!("Failed to open queue: {:?}", error);
+            println!("Test Failed - failed to open queue: {:?}", error);
             assert!(false)
         }
     };
@@ -80,7 +80,7 @@ fn queue_for_the_category_exist_with_last_task_test_pull_category_task() {
             match queue.push_category_task_to_queue(String::from("test"), task_payload.to_string()){
                 Ok(_) => assert!(true),
                 Err(error) => {
-                    println!("Expected to return ok: {}", error);
+                    println!("Test Failed - expected to return ok: {}", error);
                     assert!(false)    
                 }
             }
@@ -89,20 +89,20 @@ fn queue_for_the_category_exist_with_last_task_test_pull_category_task() {
                     assert_eq!(payload, task_payload);
                     match queue.get_category_queue_len("test") {
                         Ok(_) => {
-                            println!("Queue exists while should be empty");
+                            println!("Test Failed - queue exists while should be empty");
                             assert!(false)
                         },
                         Err(_) => assert!(true)
                     }
                 },
                 Err(error) => {
-                    println!("{}", error);
+                    println!("Test Failed - {}", error);
                     assert!(false)
                 }
             }
         },
         Err(error) => {
-            println!("Failed to open queue: {:?}", error);
+            println!("Test Failed - failed to open queue: {:?}", error);
             assert!(false)
         }
     };

@@ -172,11 +172,10 @@ mod tests {
     #[test]
     fn is_initialised() {
         let task_queue_arc = TaskQueue::initialise();
-        let result = match task_queue_arc.lock() {
-            Ok(task_queue) => task_queue.is_initialised,
-            Err(_) => false
+        match task_queue_arc.lock() {
+            Ok(task_queue) => assert_eq!(task_queue.is_initialised, true),
+            Err(_) => assert!(false)
         };
-        assert_eq!(result, true)
     }
 
     #[test]
@@ -189,13 +188,13 @@ mod tests {
                 match task_queue.push_id_task_to_queue(String::from("Do Somthing")) {
                     Ok(_) => assert_eq!(task_queue.get_id_queue_len().unwrap(), 1),
                     Err(error) => {
-                        println!("{}", error);
+                        println!("Test Failed - {}", error);
                         assert!(false)
                     }
                 }
             },
             Err(error) => {
-                println!("Failed to open queue: {}", error);
+                println!("Test Failed -failed to open queue: {}", error);
                 assert!(false)
             }
         };
@@ -213,19 +212,19 @@ mod tests {
                         match task_queue.get_category_queue_len("test") {
                             Ok(queue_size) => assert_eq!(queue_size, 1),
                             Err(error) => {
-                                println!("{}", error);
+                                println!("Test Failed - {}", error);
                                 assert!(false)
                             }
                         }
                     },
                     Err(error) => {
-                        println!("Failed to push task to queue: {}", error);
+                        println!("Test Failed - failed to push task to queue: {}", error);
                         assert!(false)
                     }
                 };
             }
             Err(error) => {
-                println!("Failed to open queue: {}", error);
+                println!("Test Failed - failed to open queue: {}", error);
                 assert!(false)
             }
         };

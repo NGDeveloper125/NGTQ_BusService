@@ -9,14 +9,14 @@ fn id_not_in_queue_test_pull_id_task_from_queue() {
         Ok(mut task_queue) => {
             match task_queue.pull_id_task_from_queue("test"){
                 Ok(_) => {
-                 println!("Expected to fail because no queue for this category exist");
+                 println!("Test Failed - expected to fail because no queue for this category exist");
                  assert!(false)
                 },
                 Err(_) => assert!(true)
              }
         },
         Err(error) => {
-            println!("Failed to open queue {:?}", error);
+            println!("Test Failed - failed to open queue {:?}", error);
             assert!(false)
         }
     };
@@ -30,14 +30,14 @@ fn id_not_valid_test_pull_id_task_from_queue() {
         Ok(mut task_queue) => {
             match task_queue.pull_id_task_from_queue("") {
                 Ok(_) => {
-                 println!("Expected to fail because no queue for this category exist");
+                 println!("Test Failed - expected to fail because no queue for this category exist");
                  assert!(false)
                 },
                 Err(_) => assert!(true)
              }
         },
         Err(error) => {
-            println!("Failed to open queue {:?}", error);
+            println!("Test Failed - failed to open queue {:?}", error);
             assert!(false)
         }
     };
@@ -61,13 +61,13 @@ fn id_valid_and_exist_test_pull_id_task_from_queue() {
                     }
                 },
                 Err(error) => {
-                    println!("Failed to push task to queue: {}", error);
+                    println!("Test Failed - failed to push task to queue: {}", error);
                     assert!(false)
                 }
             }
         },
         Err(error) => {
-            println!("Failed to open queue {:?}", error);
+            println!("Test Failed - failed to open queue {:?}", error);
             assert!(false)
         }
     };

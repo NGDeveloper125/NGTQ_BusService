@@ -28,31 +28,29 @@ mod tests {
 
         let bus_service_client = BusServiceClient::initialise("/tmp/resu_ipc_socket".to_string());
 
-        let task_id = match bus_service_client.send_task_to_bus(String::from("Do somthing")) {
+        match bus_service_client.send_task_to_bus(String::from("Do somthing")) {
             Ok(id_option) => { 
                     match id_option {
-                    Some(id) => id,
+                    Some(task_id) => {
+                        match bus_service_client.pull_task_from_bus(task_id) {
+                            Ok(_) => (),
+                            Err(error) => {
+                                println!("Failed test - {}", error);
+                                assert!(false)
+                            }
+                        }
+                    },
                     None => {
                         println!("Test failed - failed to get back id after pushing task");
                         assert!(false);
-                        String::new()
                     } 
                 }
             },
             Err(error) => {
                 println!("Failed test: {}", error);
                 assert!(false);
-                String::new()
             }
         };
-
-        match bus_service_client.pull_task_from_bus(task_id) {
-            Ok(_) => (),
-            Err(error) => {
-                println!("Failed test - {}", error);
-                assert!(false)
-            }
-        }
 
         bus_service.kill().expect("Failed to kill application process");
         assert!(true)
@@ -68,17 +66,17 @@ mod tests {
         let bus_service_client = BusServiceClient::initialise("/tmp/resu_ipc_socket".to_string());
 
         match bus_service_client.send_task_to_bus_with_category(String::from("category test"), String::from("Do Somthing")) {
-            Ok(_) => (),
+            Ok(_) => {
+                match bus_service_client.pull_task_from_bus_by_category(String::from("category test")) {
+                    Ok(_) => (),
+                    Err(error) => {
+                        println!("Failed test - {}", error);
+                        assert!(false)
+                    }
+                }
+            },
             Err(error) => {
                 println!("Failed test: {}", error);
-                assert!(false)
-            }
-        }
-
-        match bus_service_client.pull_task_from_bus_by_category(String::from("category test")) {
-            Ok(_) => (),
-            Err(error) => {
-                println!("Failed test - {}", error);
                 assert!(false)
             }
         }
