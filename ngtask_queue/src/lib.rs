@@ -8,6 +8,20 @@ pub struct TaskQueue {
     pub category_queues: HashMap<String, Vec<String>>,
 }
 
+impl TaskQueue {
+    fn initialised_check(&self, issue_desc: &str) -> Result<(), NGTQError> {
+        if !self.is_initialised {
+            return Err(
+                NGTQError::generate_error(
+                    ngtq::NGTQErrorType::Initialisation(String::from("The object was not initialised")), 
+                    String::from(issue_desc)
+                ))
+        }
+        Ok(())
+    }
+}
+
+
 impl NGTQ for TaskQueue {
     fn initialise() -> Arc<Mutex<TaskQueue>> {
         let is_initialised = true;
@@ -18,145 +32,126 @@ impl NGTQ for TaskQueue {
     }
 
     fn get_id_queue_len(&self) -> Result<usize, NGTQError> {
-        if !self.is_initialised {
-            return Err(
-                NGTQError::generate_error(
-                    ngtq::NGTQErrorType::Initialisation(String::from("The TaskQueue was not initialised")), 
-                    String::from("Failed to get queue length")
-                )
-            )
+        match self.initialised_check("Failed to get queue length") {
+            Ok(_) => {
+                Ok(self.id_queue.len())
+            },
+            Err(error) => Err(error)
         }
-        Ok(self.id_queue.len())
     }
 
     fn get_category_queue_len(&self, category: &str) -> Result<usize, NGTQError> {
-        if !self.is_initialised {
-            return Err(
-                NGTQError::generate_error(
-                    ngtq::NGTQErrorType::Initialisation(String::from("The TaskQueue was not initialised")), 
-                    String::from("Failed to get queue length")
-                )
-            )
-        }
-        match self.category_queues.get(category) {
-            Some(queue) => return  Ok(queue.len()),
-            None => return Err(
-                NGTQError::generate_error(
-                    ngtq::NGTQErrorType::CategoryQueue(String::from("No queue found for this category")), 
-                    String::from("Failed to get queue length")))
+        match self.initialised_check("Failed to get queue length") {
+            Ok(_) => {
+                match self.category_queues.get(category) {
+                    Some(queue) => return  Ok(queue.len()),
+                    None => return Err(
+                        NGTQError::generate_error(
+                            ngtq::NGTQErrorType::CategoryQueue(String::from("No queue found for this category")), 
+                            String::from("Failed to get queue length")))
+                }
+            },
+            Err(error) => Err(error)
         }
     }
 
 
 
     fn push_id_task_to_queue(&mut self, payload: String) -> Result<String, NGTQError> {
-        if !self.is_initialised {
-            return Err(
-                NGTQError::generate_error(
-                    ngtq::NGTQErrorType::Initialisation(String::from("The TaskQueue was not initialised")), 
-                    String::from("Failed to push new task")
-                )
-            )
-        }
-
-        let id = generate_id();
-        
-        if payload == String::new() {
-            return Err(
-                NGTQError::generate_error(
-                    ngtq::NGTQErrorType::IdQueue(String::from("The task payload is empty")), 
-                    String::from("Failed to push new task")
-                )
-            )
-        } else {
-            return match self.id_queue.insert(id.to_string(), payload) {
-                Some(_) => return Err(
-                    NGTQError::generate_error(
-                        ngtq::NGTQErrorType::IdQueue(String::from("A task with this id exist in the queue")),
-                        String::from("Fatal Error")
+        match self.initialised_check("Failed to push new task") {
+            Ok(_) => {
+                let id = generate_id();
+                
+                if payload == String::new() {
+                    return Err(
+                        NGTQError::generate_error(
+                            ngtq::NGTQErrorType::IdQueue(String::from("The task payload is empty")), 
+                            String::from("Failed to push new task")
+                        )
                     )
-                ), 
-                None => Ok(id)
-            }
+                } else {
+                    return match self.id_queue.insert(id.to_string(), payload) {
+                        Some(_) => return Err(
+                            NGTQError::generate_error(
+                                ngtq::NGTQErrorType::IdQueue(String::from("A task with this id exist in the queue")),
+                                String::from("Fatal Error")
+                            )
+                        ), 
+                        None => Ok(id)
+                    }
+                }
+            },
+            Err(error) => Err(error)
         }
     }
     
     fn push_category_task_to_queue(&mut self, category: String, payload: String) -> Result<(), NGTQError> {
-        if !self.is_initialised {
-            return Err(
-                NGTQError::generate_error(
-                    ngtq::NGTQErrorType::Initialisation(String::from("The TaskQueue was not initialised")),
-                    String::from("Failed to push new task")
-                )
-            )
-        }
-        if category == String::new() || payload == String::new() {
-            return Err(
-                NGTQError::generate_error(
-                    ngtq::NGTQErrorType::CategoryQueue(String::from("The task category or payload is empty")),
-                    String::from("Failed to push new task")
-                )
-            )
-        } 
-        match self.category_queues.get_mut(&category) {
-            Some(queue) => {
-                push_category_task_to_existing_queue(queue, payload);
-                return Ok(())
+        match self.initialised_check("Failed to push new task") {
+            Ok(_) => {
+                if category == String::new() || payload == String::new() {
+                    return Err(
+                        NGTQError::generate_error(
+                            ngtq::NGTQErrorType::CategoryQueue(String::from("The task category or payload is empty")),
+                            String::from("Failed to push new task")
+                        )
+                    )
+                } 
+                match self.category_queues.get_mut(&category) {
+                    Some(queue) => {
+                        push_category_task_to_existing_queue(queue, payload);
+                        return Ok(())
+                    },
+                    None => {
+                        let mut new_queue = Vec::new();
+                        new_queue.push(payload);
+                        self.category_queues.insert(category, new_queue);
+                        return Ok(());
+                    }
+                }
             },
-            None => {
-                let mut new_queue = Vec::new();
-                new_queue.push(payload);
-                self.category_queues.insert(category, new_queue);
-                return Ok(());
-            }
+            Err(error) => Err(error)
         }
     }
     
     fn pull_id_task_from_queue(&mut self, id: &str) -> Result<String, NGTQError> {
-        if !self.is_initialised {
-            return Err(
-                NGTQError::generate_error(
-                    ngtq::NGTQErrorType::Initialisation(String::from("The TaskQueue was not initialised")),
-                    String::from("Failed to pull task")
-                )
-            )
-        }
-        match self.id_queue.remove(id) {
-            Some(payload) => Ok(payload),
-            None => Err(
-                NGTQError::generate_error(
-                    ngtq::NGTQErrorType::IdQueue(String::from("Task with this id was not found in queue")),
-                    String::from("Failed to pull task from queue")
-                )
-            )
+        match self.initialised_check("Failed to pull task") {
+            Ok(_) => {
+                match self.id_queue.remove(id) {
+                    Some(payload) => Ok(payload),
+                    None => Err(
+                        NGTQError::generate_error(
+                            ngtq::NGTQErrorType::IdQueue(String::from("Task with this id was not found in queue")),
+                            String::from("Failed to pull task from queue")
+                        )
+                    )
+                }
+            },
+            Err(error) => Err(error)
         }
     }
     
     fn pull_category_task_from_queue(&mut self, category: &str) -> Result<String, NGTQError> {
-        if !self.is_initialised {
-            return Err(
-                NGTQError::generate_error(
-                    ngtq::NGTQErrorType::Initialisation(String::from("The TaskQueue was not initialised")),
-                    String::from("Failed to pull task")
-                )
-            )
-        }
-        match self.category_queues.remove(category) {
-            Some(mut queue) => {
-                if queue.len() > 1 {
-                    let payload = queue.remove(0);
-                    self.category_queues.insert(category.to_string(), queue);
-                    Ok(payload)
-                } else {
-                    Ok(queue.remove(0))
+        match self.initialised_check("Failed to pull task") {
+            Ok(_) => {
+                match self.category_queues.remove(category) {
+                    Some(mut queue) => {
+                        if queue.len() > 1 {
+                            let payload = queue.remove(0);
+                            self.category_queues.insert(category.to_string(), queue);
+                            Ok(payload)
+                        } else {
+                            Ok(queue.remove(0))
+                        }
+                    },
+                    None => Err(
+                        NGTQError::generate_error(
+                            ngtq::NGTQErrorType::CategoryQueue(String::from("No tasks for this topic were found")),
+                            String::from("Failed to pull task from queue")
+                        )
+                    )
                 }
             },
-            None => Err(
-                NGTQError::generate_error(
-                    ngtq::NGTQErrorType::CategoryQueue(String::from("No tasks for this topic were found")),
-                    String::from("Failed to pull task from queue")
-                )
-            )
+            Err(error) => Err(error)
         }
     }
 }
