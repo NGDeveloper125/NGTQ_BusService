@@ -13,19 +13,19 @@ fn valid_new_message_test_push_id_task_to_queue() {
                     match task_queue.get_id_queue_len() {
                         Ok(queue_size) => assert_eq!(queue_size, 1),
                         Err(error) => {
-                            println!("Failed to get queue size: {}", error);
+                            println!("Test Failed - failed to get queue size: {}", error);
                             assert!(false)
                         }
                     }
                 },
                 Err(error) => {
-                    println!("Failed to push task to queue: {}", error);
+                    println!("Test Failed - failed to push task to queue: {}", error);
                     assert!(false)
                 } 
             }
         },
         Err(error) => {
-            println!("Failed to open queue: {:?}", error);
+            println!("Test Failed - failed to open queue: {:?}", error);
             assert!(false)
         }
     };
