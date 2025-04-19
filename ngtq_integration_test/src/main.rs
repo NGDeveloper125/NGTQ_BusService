@@ -6,7 +6,7 @@ fn main() {
 
 pub fn start_bus() -> Child {
     println!("Starting bus service...");
-    let child = Command::new("../ngtq_bus_service/target/debug/ngtq_bus_service")
+    let child = Command::new("target/debug/ngtq_bus_service")
                                   .spawn()
                                   .expect("Failed to start bus service");
     thread::sleep(Duration::from_secs(2));
