@@ -41,6 +41,24 @@ jobs:
           tag_name: ${{ steps.semvers.outputs.patch }}
           files: |
             target/release/ngtq_bus_service
+          body: |
+            # NGTQ Bus Service - Initial Release
+            
+            First release of the Next Generation Task Queue Bus Service implementation.
+            
+            ## Features
+            - Task queue implementation with unique ID support
+            - Category-based task management
+            - IPC socket communication
+            - Linux support
+            
+            ## Installation
+            Download the `ngtq_bus_service` binary and ensure execute permissions:
+            ```bash
+            chmod +x ngtq_bus_service
+            ```
+            
+            ## Configuration
+            Default IPC socket path: `/tmp/resu_ipc_socket`
           draft: false
           prerelease: false
-          generate_release_notes: true
