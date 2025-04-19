@@ -14,28 +14,30 @@ impl Receiver  {
 
         start_receiving(socket_path.to_string(), tx);
 
-        while *keep_running {
-            match rx.recv() {
-                Ok(mut stream) => {
-                    let mut buffer: [u8; 1024] = [0; 1024];
-                    match stream.read(&mut buffer) {
-                        Ok(bytes) => {
-                            let incoming_request = String::from_utf8_lossy(&buffer[..bytes]);
-                            let response = handle_incoming_request(incoming_request.to_string(), &wrapped_task_queue);
-                            match serde_json::to_string(&response) {
-                                Ok(serialised_response ) => {
-                                    match stream.write_all(serialised_response.as_bytes()) {
-                                        Ok(_) => (), // log?
-                                        Err(error) => return Err(error.to_string())
-                                    }
-                                },
-                                Err(error) => return Err(error.to_string())
-                            }
-                        },
-                        Err(error) => return Err(error.to_string())
-                    }
-                },
-                Err(error) => return Err(error.to_string())    
+        if *keep_running {
+            loop {
+                match rx.recv() {
+                    Ok(mut stream) => {
+                        let mut buffer: [u8; 1024] = [0; 1024];
+                        match stream.read(&mut buffer) {
+                            Ok(bytes) => {
+                                let incoming_request = String::from_utf8_lossy(&buffer[..bytes]);
+                                let response = handle_incoming_request(incoming_request.to_string(), &wrapped_task_queue);
+                                match serde_json::to_string(&response) {
+                                    Ok(serialised_response ) => {
+                                        match stream.write_all(serialised_response.as_bytes()) {
+                                            Ok(_) => (), // log?
+                                            Err(error) => return Err(error.to_string())
+                                        }
+                                    },
+                                    Err(error) => return Err(error.to_string())
+                                }
+                            },
+                            Err(error) => return Err(error.to_string())
+                        }
+                    },
+                    Err(error) => return Err(error.to_string())    
+                }
             }
         }
         Ok(())
@@ -123,7 +125,7 @@ fn handle_category_task_push_request<T: NGTQ>(category: String, payload: String,
                 Err(error) => BusResponse { successful: false, error: Some(format!("{}", error)), payload: None }
             }
         },
-        Err(error) => return BusResponse 
+        Err(error) => BusResponse 
         { 
             successful: false, 
             error: Some(format!("Could not open wrapped task queue {}", error)),
@@ -140,7 +142,7 @@ fn handle_id_task_pull_request<T: NGTQ>(task_id: String, wrapped_task_queue: &Ar
                 Err(error) => BusResponse { successful: false, error: Some(format!("{}", error)), payload: None }
             }
         },
-        Err(error) => return BusResponse 
+        Err(error) => BusResponse 
         { 
             successful: false, 
             error: Some(format!("Could not open wrapped task queue: {}", error)),
@@ -157,7 +159,7 @@ fn handle_category_task_pull_request<T: NGTQ>(task_category: String, wrapped_tas
                 Err(error) => BusResponse { successful: false, error: Some(format!("{}", error)), payload: None }
             }
         },
-        Err(error) => return BusResponse 
+        Err(error) => BusResponse 
         { 
             successful: false, 
             error: Some(format!("Could not open wrapped task queue: {}", error)),

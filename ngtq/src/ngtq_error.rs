@@ -1,5 +1,4 @@
 use std::{error::Error, fmt::{self}};
-
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -18,8 +17,8 @@ pub struct NGTQError {
 }
 
 impl NGTQError {
-    pub fn generate_error(error_type: NGTQErrorType, description: String) -> Self {
-        NGTQError { error_type: error_type, error_description: description }
+    pub fn generate_error(error_type: NGTQErrorType, error_description: String) -> Self {
+        NGTQError { error_type, error_description }
     }
 }
 

@@ -9,7 +9,7 @@ pub struct BusServiceClient {
 
 impl BusServiceClient {
     pub fn initialise(bus_address: String) -> BusServiceClient {
-        BusServiceClient { is_initialise: true, bus_address: bus_address }
+        BusServiceClient { is_initialise: true, bus_address }
     }
 
     pub fn send_task_to_bus(&self, task_payload: String) -> Result<Option<String>, String> {
@@ -26,12 +26,11 @@ impl BusServiceClient {
             Ok(serialise_task) => {
                 match send_request_to_bus(serialise_task, &self.bus_address) {
                     Ok(serialised_response) => handle_bus_response(serialised_response),
-                    Err(error) => Err(format!("Failed to parse queue size to usize: {}", error.to_string()))
+                    Err(error) => Err(format!("Failed to parse queue size to usize: {}", error))
                 }
             },
             Err(error) => Err(format!("Failed to serialise task to send to bus: {}", error))
         }
-        
     }
     
 
@@ -138,5 +137,5 @@ fn handle_bus_response(serialised_response: String) -> Result<Option<String>, St
     if response.successful {
         return Ok(response.payload)
     }
-    Err(format!("{}", response.error.unwrap()))
+    Err(response.error.unwrap().to_string())
 }
