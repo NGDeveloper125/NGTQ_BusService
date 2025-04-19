@@ -8,7 +8,7 @@ mod receiver;
 mod config;
 
 // config file path
-const CONFILG_FILE_PATH: &'static str = "ngtq_bus_service_config.json"; 
+const CONFILG_FILE_PATH: &str = "ngtq_bus_service_config.json"; 
 
 #[derive(Parser)]
 #[clap(author, version, about = "Task-Queue Bus Service Application")]

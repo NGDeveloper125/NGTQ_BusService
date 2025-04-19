@@ -44,8 +44,8 @@ impl NGTQ for TaskQueue {
         match self.initialised_check("Failed to get queue length") {
             Ok(_) => {
                 match self.category_queues.get(category) {
-                    Some(queue) => return  Ok(queue.len()),
-                    None => return Err(
+                    Some(queue) => Ok(queue.len()),
+                    None => Err(
                         NGTQError::generate_error(
                             ngtq::NGTQErrorType::CategoryQueue(String::from("No queue found for this category")), 
                             String::from("Failed to get queue length")))
@@ -63,15 +63,15 @@ impl NGTQ for TaskQueue {
                 let id = generate_id();
                 
                 if payload == String::new() {
-                    return Err(
+                    Err(
                         NGTQError::generate_error(
                             ngtq::NGTQErrorType::IdQueue(String::from("The task payload is empty")), 
                             String::from("Failed to push new task")
                         )
                     )
                 } else {
-                    return match self.id_queue.insert(id.to_string(), payload) {
-                        Some(_) => return Err(
+                    match self.id_queue.insert(id.to_string(), payload) {
+                        Some(_) => Err(
                             NGTQError::generate_error(
                                 ngtq::NGTQErrorType::IdQueue(String::from("A task with this id exist in the queue")),
                                 String::from("Fatal Error")
@@ -99,13 +99,12 @@ impl NGTQ for TaskQueue {
                 match self.category_queues.get_mut(&category) {
                     Some(queue) => {
                         push_category_task_to_existing_queue(queue, payload);
-                        return Ok(())
+                        Ok(())
                     },
                     None => {
-                        let mut new_queue = Vec::new();
-                        new_queue.push(payload);
+                        let new_queue = vec![payload];
                         self.category_queues.insert(category, new_queue);
-                        return Ok(());
+                        Ok(())
                     }
                 }
             },
