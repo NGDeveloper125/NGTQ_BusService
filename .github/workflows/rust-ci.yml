@@ -31,23 +31,9 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      # Step 1: Build all projects
-      - name: Build ngtask_queue library
-        run: cargo build --verbose --manifest-path ngtask_queue/Cargo.toml
-        
-      - name: Build ngtq_bus_service application
-        run: cargo build --verbose --manifest-path ngtq_bus_service/Cargo.toml
-        
-      - name: Build ngtq_bus_service_client library
-        run: cargo build --verbose --manifest-path ngtq_bus_service_client/Cargo.toml
-        
-      - name: Build ngtq_integration_test application
-        run: cargo build --verbose --manifest-path ngtq_integration_test/Cargo.toml
+      # Build and test all workspace members
+      - name: Build all packages
+        run: cargo build --workspace --verbose
 
-      # Step 2: Run tests for ngtask_queue
-      - name: Test ngtask_queue
-        run: cargo test --verbose --manifest-path ngtask_queue/Cargo.toml
-
-      # Step 3: Run tests for ngtq_integration_test
-      - name: Run integration tests
-        run: cargo test --verbose --manifest-path ngtq_integration_test/Cargo.toml
+      - name: Run all tests
+        run: cargo test --workspace --verbose
