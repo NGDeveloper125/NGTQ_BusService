@@ -1,0 +1,40 @@
+<mxfile host="65bd71144e">
+    <diagram id="vMYLoEahDz6QfIhOWr86" name="PagesLayout">
+        <mxGraphModel dx="965" dy="935" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="2" value="NGTaskQueue Bus Services" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=30;" vertex="1" parent="1">
+                    <mxGeometry x="212" y="10" width="404" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="" style="swimlane;startSize=0;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="50" width="727" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="About" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                    <mxGeometry x="1" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="Bus-Services" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                    <mxGeometry x="243" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="Forms" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                    <mxGeometry x="364" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="NGTQ" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                    <mxGeometry x="122" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="FAQ" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                    <mxGeometry x="485" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="The Project" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                    <mxGeometry x="606" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="Page Content" style="swimlane;startSize=0;verticalAlign=top;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="83" width="730" height="790" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="" style="swimlane;startSize=0;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="876" width="730" height="50" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

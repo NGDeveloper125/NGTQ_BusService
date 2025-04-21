@@ -1,0 +1,9 @@
+
+.navigation-item {
+    border-style:solid;
+    border-color: blue;
+    padding-left: 10px;
+    padding-right: 10px;
+    height: 40px;
+    width: 100px;
+}
