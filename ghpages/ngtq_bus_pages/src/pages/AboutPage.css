@@ -1,0 +1,46 @@
+.about-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+.about-container h1 {
+    color: #2c3e50;
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.about-container h2 {
+    color: #34495e;
+    font-size: 1.8rem;
+    margin: 2rem 0 1rem;
+}
+
+.lead {
+    font-size: 1.2rem;
+    color: #2c3e50;
+    margin-bottom: 2rem;
+}
+
+.about-container div {
+    margin-bottom: 2rem;
+}
+
+.about-container p {
+    margin-bottom: 1rem;
+}
+
+.intro-section {
+    border-bottom: 2px solid #eee;
+    padding-bottom: 2rem;
+}
+
+.closing-section {
+    border-top: 2px solid #eee;
+    padding-top: 2rem;
+    font-style: italic;
+}
