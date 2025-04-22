@@ -1,0 +1,18 @@
+
+.footer {
+
+    display: flex;
+    height: 20vh;
+
+    margin-top: 5px;
+    margin-left: 30px;
+    margin-right: 30px;
+
+
+    background-color: blanchedalmond;
+}
+
+.contributors {
+   display: flex;
+   flex-direction: column; 
+}
