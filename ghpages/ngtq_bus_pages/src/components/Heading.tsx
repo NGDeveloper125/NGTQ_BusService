@@ -8,8 +8,7 @@ type HeadingProps = {
 function Heading(props: HeadingProps) {
     return (
     <div>
-        <h1>NGTaskQueue Bus Services</h1>
-        <NavigationBar currentPage={props.currentPage} />
+        <NavigationBar />
     </div>
     );
 }
